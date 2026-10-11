@@ -365,7 +365,7 @@ LABELS = {"Aabyhoj Kirke": "Åbyhøj Kirke", "Gammel Vindmolle": "Tuesbøl Møll
           "Aarhus Universitet Aulaen": "Aarhus Universitet", "Ceres Park": "Ceres Park Stadion"}
 
 
-def label(name, x, z, angle, width, depth, replace=False, capitals=True):
+def label(name, x, z, angle, width, depth, replace=False, capitals=True, gap=6):
     """Shows a landmark's name the way street names are shown, in capitals: a short named footpath along its front.
     Does nothing when a path of that name is there already, unless replace is set (the building moved)."""
     name = LABELS.get(name, name)
@@ -378,7 +378,8 @@ def label(name, x, z, angle, width, depth, replace=False, capitals=True):
             call("/commands/bulldoze", {"entityType": "netSegment", "id": s["id"]})
     a = math.radians(angle)
     front, along = (-math.sin(a), math.cos(a)), (math.cos(a), math.sin(a))
-    cx, cz = x + front[0] * (depth / 2 + 6), z + front[1] * (depth / 2 + 6)
+    # gap: metres in front of the lot; negative keeps the sign on the lot, off the street it faces
+    cx, cz = x + front[0] * (depth / 2 + gap), z + front[1] * (depth / 2 + gap)
     half = min(max(width / 2, 24), 45)
     r = call("/commands/build-network", {"dryRun": False, "roadPrefab": "Pedestrian Pavement", "name": name,
                                          "start": {"x": round(cx - along[0] * half, 1), "z": round(cz - along[1] * half, 1)},

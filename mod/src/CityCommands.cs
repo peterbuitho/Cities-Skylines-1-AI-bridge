@@ -97,6 +97,37 @@ namespace SkylinesAgentBridge
             return CommandResult.FromJson("{\"ok\":true,\"district\":" + district + ",\"name\":\"" + JsonUtil.Escape(name) + "\"}");
         }
 
+        // POST /commands/name-park {"name":"Tivoli Friheden","x":..,"z":..,"radius":200}: names the park
+        // area at a position. Where there is none, an amusement park area of that radius is made first.
+        public static CommandResult NamePark(string body)
+        {
+            string name = JsonUtil.GetString(body, "name", "");
+            float radius = Mathf.Clamp(JsonUtil.GetNumber(body, "radius", 200f), 32f, 2000f);
+            Vector3 position = new Vector3(JsonUtil.GetNumber(body, "x", 0f), 0f, JsonUtil.GetNumber(body, "z", 0f));
+            if (name.Length == 0)
+            {
+                return CommandResult.Fail("name is required.");
+            }
+
+            DistrictManager districts = Singleton<DistrictManager>.instance;
+            byte park = districts.GetPark(position);
+            bool created = park == 0;
+            if (created)
+            {
+                if (!districts.CreatePark(out park, DistrictPark.ParkType.AmusementPark, DistrictPark.ParkLevel.Level1))
+                {
+                    return CommandResult.Fail("The game could not create a park area.");
+                }
+                DistrictTool.ApplyBrush(DistrictTool.Layer.Parks, park, radius, position, position);
+            }
+            IEnumerator<bool> rename = districts.SetParkName(park, name);
+            while (rename.MoveNext())
+            {
+            }
+
+            return CommandResult.FromJson("{\"ok\":true,\"park\":" + park + ",\"created\":" + JsonUtil.Bool(created) + ",\"name\":\"" + JsonUtil.Escape(name) + "\"}");
+        }
+
         // POST /commands/create-style {"name":"Aarhus","prefabs":"a_Data;b_Data;..."}
         // Saves a district style, the game's own way of saying which buildings may grow, holding the
         // named building prefabs. The game reads it at the next city load. A style only steers the

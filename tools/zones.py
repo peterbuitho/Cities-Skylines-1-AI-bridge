@@ -95,7 +95,9 @@ def plandata_areas(features, project):
             mix = ["Office"] if special == 3110 else ["Industrial"]
         elif use == 41:                     # town or district centre
             mix = [shop, "Office", shop, home]
-        else:                               # recreation, public purposes, technical plant, countryside
+        elif use == 51:                     # public purposes: university, hospital, administration, schools.
+            mix = ["Office"]                # They are a large share of the city's jobs; offices are the nearest the game has.
+        else:                               # recreation, technical plant, countryside
             continue
 
         def rule(x, z, mix=mix):

@@ -1,0 +1,597 @@
+[
+{
+"t": 0.0,
+"x": -1665,
+"z": -3117,
+"size": 130,
+"bearing": 0,
+"tilt": 38,
+"name": "Marselisborg Slot"
+},
+{
+"t": 2.5,
+"x": -1665,
+"z": -3117,
+"size": 130,
+"bearing": 0,
+"tilt": 38
+},
+{
+"t": 12.1,
+"x": -2154,
+"z": -2588,
+"size": 170,
+"bearing": -43,
+"tilt": 38,
+"name": "Ceres Park"
+},
+{
+"t": 14.6,
+"x": -2154,
+"z": -2588,
+"size": 170,
+"bearing": -43,
+"tilt": 38
+},
+{
+"t": 22.7,
+"x": -2071,
+"z": -1986,
+"size": 187,
+"bearing": 8,
+"tilt": 38,
+"name": "Tivoli Friheden"
+},
+{
+"t": 25.2,
+"x": -2071,
+"z": -1986,
+"size": 187,
+"bearing": 8,
+"tilt": 38
+},
+{
+"t": 35.3,
+"x": -2207,
+"z": -1241,
+"size": 130,
+"bearing": -10,
+"tilt": 38,
+"name": "Sankt Lukas Kirke"
+},
+{
+"t": 37.8,
+"x": -2207,
+"z": -1241,
+"size": 130,
+"bearing": -10,
+"tilt": 38
+},
+{
+"t": 46.6,
+"x": -1557,
+"z": -1109,
+"size": 130,
+"bearing": 79,
+"tilt": 38,
+"name": "Sankt Pauls Kirke"
+},
+{
+"t": 49.1,
+"x": -1557,
+"z": -1109,
+"size": 130,
+"bearing": 79,
+"tilt": 38
+},
+{
+"t": 53.7,
+"x": -1520,
+"z": -766,
+"size": 190,
+"bearing": 6,
+"tilt": 38,
+"name": "Bruuns Galleri"
+},
+{
+"t": 56.2,
+"x": -1520,
+"z": -766,
+"size": 190,
+"bearing": 6,
+"tilt": 38
+},
+{
+"t": 60.2,
+"x": -1488,
+"z": -535,
+"size": 187,
+"bearing": 8,
+"tilt": 38,
+"name": "Aarhus H"
+},
+{
+"t": 62.7,
+"x": -1488,
+"z": -535,
+"size": 187,
+"bearing": 8,
+"tilt": 38
+},
+{
+"t": 66.7,
+"x": -1652,
+"z": -419,
+"size": 187,
+"bearing": -55,
+"tilt": 38,
+"name": "Aarhus Rådhus"
+},
+{
+"t": 69.2,
+"x": -1652,
+"z": -419,
+"size": 187,
+"bearing": -55,
+"tilt": 38
+},
+{
+"t": 73.2,
+"x": -1888,
+"z": -333,
+"size": 163,
+"bearing": -70,
+"tilt": 38,
+"name": "Musikhuset"
+},
+{
+"t": 75.7,
+"x": -1888,
+"z": -333,
+"size": 163,
+"bearing": -70,
+"tilt": 38
+},
+{
+"t": 79.7,
+"x": -1858,
+"z": -238,
+"size": 187,
+"bearing": 18,
+"tilt": 38,
+"name": "ARoS"
+},
+{
+"t": 82.2,
+"x": -1858,
+"z": -238,
+"size": 187,
+"bearing": 18,
+"tilt": 38
+},
+{
+"t": 88.6,
+"x": -1383,
+"z": -175,
+"size": 139,
+"bearing": 82,
+"tilt": 38,
+"name": "Salling"
+},
+{
+"t": 91.1,
+"x": -1383,
+"z": -175,
+"size": 139,
+"bearing": 82,
+"tilt": 38
+},
+{
+"t": 95.1,
+"x": -1186,
+"z": 49,
+"size": 136,
+"bearing": 41,
+"tilt": 38,
+"name": "Aarhus Teater"
+},
+{
+"t": 97.6,
+"x": -1186,
+"z": 49,
+"size": 136,
+"bearing": 41,
+"tilt": 38
+},
+{
+"t": 101.6,
+"x": -1195,
+"z": 88,
+"size": 163,
+"bearing": -13,
+"tilt": 38,
+"name": "Aarhus Domkirke"
+},
+{
+"t": 104.1,
+"x": -1195,
+"z": 88,
+"size": 163,
+"bearing": -13,
+"tilt": 38
+},
+{
+"t": 108.1,
+"x": -1019,
+"z": -77,
+"size": 130,
+"bearing": 133,
+"tilt": 38,
+"name": "Toldboden"
+},
+{
+"t": 110.6,
+"x": -1019,
+"z": -77,
+"size": 130,
+"bearing": 133,
+"tilt": 38
+},
+{
+"t": 114.6,
+"x": -944,
+"z": -269,
+"size": 163,
+"bearing": 159,
+"tilt": 38,
+"name": "Dokk1"
+},
+{
+"t": 117.1,
+"x": -944,
+"z": -269,
+"size": 163,
+"bearing": 159,
+"tilt": 38
+},
+{
+"t": 123.6,
+"x": -1270,
+"z": -625,
+"size": 160,
+"bearing": 222,
+"tilt": 38,
+"name": "Aarhus City Tower"
+},
+{
+"t": 126.1,
+"x": -1270,
+"z": -625,
+"size": 160,
+"bearing": 222,
+"tilt": 38
+},
+{
+"t": 136.2,
+"x": -1435,
+"z": 119,
+"size": 130,
+"bearing": 347,
+"tilt": 38,
+"name": "Magasin"
+},
+{
+"t": 138.7,
+"x": -1435,
+"z": 119,
+"size": 130,
+"bearing": 347,
+"tilt": 38
+},
+{
+"t": 142.7,
+"x": -1529,
+"z": 225,
+"size": 130,
+"bearing": 318,
+"tilt": 38,
+"name": "Vor Frue Kirke"
+},
+{
+"t": 145.2,
+"x": -1529,
+"z": 225,
+"size": 130,
+"bearing": 318,
+"tilt": 38
+},
+{
+"t": 153.6,
+"x": -908,
+"z": 296,
+"size": 163,
+"bearing": 443,
+"tilt": 38,
+"name": "Navitas"
+},
+{
+"t": 156.1,
+"x": -908,
+"z": 296,
+"size": 163,
+"bearing": 443,
+"tilt": 38
+},
+{
+"t": 160.1,
+"x": -828,
+"z": 386,
+"size": 204,
+"bearing": 402,
+"tilt": 38,
+"name": "Bestseller"
+},
+{
+"t": 162.6,
+"x": -828,
+"z": 386,
+"size": 204,
+"bearing": 402,
+"tilt": 38
+},
+{
+"t": 170.6,
+"x": -810,
+"z": 986,
+"size": 130,
+"bearing": 362,
+"tilt": 38,
+"name": "Paustian"
+},
+{
+"t": 173.1,
+"x": -810,
+"z": 986,
+"size": 130,
+"bearing": 362,
+"tilt": 38
+},
+{
+"t": 181.2,
+"x": -1214,
+"z": 1445,
+"size": 130,
+"bearing": 319,
+"tilt": 38,
+"name": "Sankt Johannes Kirke"
+},
+{
+"t": 183.7,
+"x": -1214,
+"z": 1445,
+"size": 130,
+"bearing": 319,
+"tilt": 38
+},
+{
+"t": 191.8,
+"x": -1797,
+"z": 1609,
+"size": 130,
+"bearing": 286,
+"tilt": 38,
+"name": "Aarhus Universitet Aulaen"
+},
+{
+"t": 194.3,
+"x": -1797,
+"z": 1609,
+"size": 130,
+"bearing": 286,
+"tilt": 38
+},
+{
+"t": 198.3,
+"x": -1863,
+"z": 1485,
+"size": 160,
+"bearing": 208,
+"tilt": 38,
+"name": "Statsbiblioteket"
+},
+{
+"t": 200.8,
+"x": -1863,
+"z": 1485,
+"size": 160,
+"bearing": 208,
+"tilt": 38
+},
+{
+"t": 210.0,
+"x": -2547,
+"z": 1587,
+"size": 187,
+"bearing": 278,
+"tilt": 38,
+"name": "Storcenter Nord"
+},
+{
+"t": 212.5,
+"x": -2547,
+"z": 1587,
+"size": 187,
+"bearing": 278,
+"tilt": 38
+},
+{
+"t": 224.6,
+"x": -2119,
+"z": 2385,
+"size": 130,
+"bearing": 388,
+"tilt": 38,
+"name": "Christianskirken"
+},
+{
+"t": 227.1,
+"x": -2119,
+"z": 2385,
+"size": 130,
+"bearing": 388,
+"tilt": 38
+},
+{
+"t": 253.0,
+"x": -2238,
+"z": 446,
+"size": 139,
+"bearing": 544,
+"tilt": 38,
+"name": "Vaeksthusene"
+},
+{
+"t": 255.5,
+"x": -2238,
+"z": 446,
+"size": 139,
+"bearing": 544,
+"tilt": 38
+},
+{
+"t": 259.5,
+"x": -2239,
+"z": 375,
+"size": 130,
+"bearing": 541,
+"tilt": 38,
+"name": "Gammel Vindmolle"
+},
+{
+"t": 262.0,
+"x": -2239,
+"z": 375,
+"size": 130,
+"bearing": 541,
+"tilt": 38
+},
+{
+"t": 266.0,
+"x": -2346,
+"z": 320,
+"size": 130,
+"bearing": 603,
+"tilt": 38,
+"name": "Den Gamle By"
+},
+{
+"t": 268.5,
+"x": -2346,
+"z": 320,
+"size": 130,
+"bearing": 603,
+"tilt": 38
+},
+{
+"t": 272.5,
+"x": -2324,
+"z": 167,
+"size": 130,
+"bearing": 532,
+"tilt": 38,
+"name": "Prismet"
+},
+{
+"t": 275.0,
+"x": -2324,
+"z": 167,
+"size": 130,
+"bearing": 532,
+"tilt": 38
+},
+{
+"t": 279.3,
+"x": -2387,
+"z": -147,
+"size": 130,
+"bearing": 551,
+"tilt": 38,
+"name": "Ceres Panorama"
+},
+{
+"t": 281.8,
+"x": -2387,
+"z": -147,
+"size": 130,
+"bearing": 551,
+"tilt": 38
+},
+{
+"t": 309.5,
+"x": -4468,
+"z": -110,
+"size": 130,
+"bearing": 631,
+"tilt": 38,
+"name": "Aabyhoj Kirke"
+},
+{
+"t": 312.0,
+"x": -4468,
+"z": -110,
+"size": 130,
+"bearing": 631,
+"tilt": 38
+},
+{
+"t": 371.6,
+"x": -87,
+"z": 775,
+"size": 150,
+"bearing": 799,
+"tilt": 38,
+"name": "AARhus"
+},
+{
+"t": 374.1,
+"x": -87,
+"z": 775,
+"size": 150,
+"bearing": 799,
+"tilt": 38
+},
+{
+"t": 378.1,
+"x": 25,
+"z": 983,
+"size": 156,
+"bearing": 748,
+"tilt": 38,
+"name": "Isbjerget"
+},
+{
+"t": 380.6,
+"x": 25,
+"z": 983,
+"size": 156,
+"bearing": 748,
+"tilt": 38
+},
+{
+"t": 384.6,
+"x": 122,
+"z": 1057,
+"size": 241,
+"bearing": 773,
+"tilt": 38,
+"name": "Lighthouse"
+},
+{
+"t": 387.1,
+"x": 122,
+"z": 1057,
+"size": 241,
+"bearing": 773,
+"tilt": 38
+}
+]

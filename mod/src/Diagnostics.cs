@@ -198,6 +198,10 @@ namespace SkylinesAgentBridge
             json.Append(",\"unemployed\":").Append(city.m_educated0Data.m_finalUnemployed + city.m_educated1Data.m_finalUnemployed + city.m_educated2Data.m_finalUnemployed + city.m_educated3Data.m_finalUnemployed);
             json.Append(",\"electricityCapacity\":").Append(city.GetElectricityCapacity());
             json.Append(",\"electricityConsumption\":").Append(city.GetElectricityConsumption());
+            json.Append(",\"waterCapacity\":").Append(city.GetWaterCapacity());
+            json.Append(",\"waterConsumption\":").Append(city.GetWaterConsumption());
+            json.Append(",\"sewageCapacity\":").Append(city.GetSewageCapacity());
+            json.Append(",\"sewageAccumulation\":").Append(city.GetSewageAccumulation());
             json.Append(",\"garbageAmount\":").Append(city.GetGarbageAmount());
             json.Append(",\"garbageCapacity\":").Append(city.GetGarbageCapacity());
             json.Append(",\"deadCount\":").Append(city.GetDeadCount());

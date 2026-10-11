@@ -81,7 +81,7 @@ def main():
                 and math.hypot(f["position"]["x"] - x, f["position"]["z"] - z) < 200]
         if name and near:
             f = min(near, key=lambda f: math.hypot(f["position"]["x"] - x, f["position"]["z"] - z))
-            if kit.label(name, f["position"]["x"], f["position"]["z"], f["angleDegrees"], f["width"] * 8, f["length"] * 8, capitals=False):
+            if kit.label(name, f["position"]["x"], f["position"]["z"], f["angleDegrees"], f["width"] * 8, f["length"] * 8, replace=True, gap=0):
                 named.add(f["id"])
     print(f"name signs: {len(named)}")
 
