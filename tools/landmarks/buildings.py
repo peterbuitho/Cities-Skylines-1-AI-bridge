@@ -255,7 +255,7 @@ BUILDINGS = {
     "dokk1": ("Dokk1", dokk1, "Library and citizens' service centre on the harbour front, 2015.", -944, -269, 38),
     "isbjerget": ("Isbjerget", isbjerget, "The Iceberg housing on Aarhus O, 2013.", 25, 983, 42),
     "musikhuset": ("Musikhuset", musikhuset, "The concert hall, 1982.", -1888, -333, 238),
-    "lighthouse": ("Lighthouse", lighthouse, "Housing tower on Aarhus O, 142 m, 2022.", 122, 1057, 42),
+    "lighthouse": ("Lighthouse", lighthouse, "Housing tower on Aarhus O, 142 m, 2022.", 122, 1057, 102),
     "aarhus_big": ("AARhus", aarhus_big, "Housing block on Aarhus O by Bjarke Ingels Group.", -87, 775, 42),
     "windmill": ("Gammel Vindmolle", windmill, "An old windmill.", -2239, 375, 0),
     "den_gamle_by": ("Den Gamle By", den_gamle_by, "The Old Town open-air museum: half-timbered town houses.", -2346, 320, 0),
