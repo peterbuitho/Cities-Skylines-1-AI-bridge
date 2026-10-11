@@ -76,7 +76,7 @@ py -X utf8 tools\screenshot.py -1187 90 shot.png --size 150   # look at it; --ui
 ## Services and houses
 
 ```powershell
-py -X utf8 tools\civic.py dataarhus.civic.osm.json citiesarhus.toml "-4800,-2880,960,2880" --live   # schools, clinics, fire, police, libraries, cemeteries at real sites
+py -X utf8 tools\civic.py data\aarhus.civic.osm.json cities\aarhus.toml "-4800,-2880,960,2880" --live   # schools, clinics, fire, police, libraries, cemeteries at real sites
 py -X utf8 tools\workshop_homes.py style    # once, then restart: a district style of the subscribed Workshop houses
 py -X utf8 tools\workshop_homes.py apply    # after every load: all districts grow from it
 py -X utf8 tools\turbines.py --live         # remove seeded wind turbines that now stand among buildings
