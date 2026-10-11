@@ -67,8 +67,8 @@ def main():
             if "~" not in row:
                 print(f"  skipped {name or kind}: no open water at the real site")
                 continue
-        if any(math.hypot(x - p[0], z - p[1]) < 60 for p in placed):
-            continue
+        if any(math.hypot(x - p[2], z - p[3]) < 60 for p in placed):
+            continue  # one site, mapped twice
         done = False
         for s in sorted(roads, key=lambda s: (s["middle"]["x"] - x) ** 2 + (s["middle"]["z"] - z) ** 2)[:30]:
             dx, dz = s["end"]["x"] - s["start"]["x"], s["end"]["z"] - s["start"]["z"]
@@ -80,6 +80,8 @@ def main():
             px, pz = s["middle"]["x"] + side * nx * (10 + depth / 2), s["middle"]["z"] + side * nz * (10 + depth / 2)
             if any(o is not s and math.hypot(o["middle"]["x"] - px, o["middle"]["z"] - pz) < depth / 2 + 8 for o in roads):
                 continue
+            if any(math.hypot(p[0] - px, p[1] - pz) < max(width, depth) for p in placed):
+                continue
             for g in growables:
                 if math.hypot(g["position"]["x"] - px, g["position"]["z"] - pz) < max(width, depth) / 2 + 8:
                     call("/commands/bulldoze", {"entityType": "building", "id": g["id"]})
@@ -87,7 +89,7 @@ def main():
             angle = math.degrees(math.atan2(side * nx, -side * nz)) % 360
             r = call("/commands/place-building", {"dryRun": False, "buildingPrefab": prefab, "position": {"x": round(px, 1), "z": round(pz, 1)}, "angleDegrees": round(angle, 1)})
             if r.get("ok"):
-                placed.append((px, pz))
+                placed.append((px, pz, x, z))
                 print(f"  placed {prefab} for {name or kind} at {px:.0f},{pz:.0f} on {s['name']}")
                 done = True
                 break
