@@ -75,16 +75,18 @@ def christianskirken():
     return m, kit.texture(1958, brick_colour=(204, 176, 122), roof=kit.TILE, spire=kit.COPPER, pointed=False, clock=False)
 
 
+# Positions are OpenStreetMap footprint centres, moved by up to 96 m where the model would stand on a
+# road or track: the game's roads are wider than the streets and the models are simpler than the buildings.
 # key: (asset name, builder, description, footprint centre x, z, tower_towards in degrees)
 CHURCHES = {
-    "aarhus_domkirke": ("Aarhus Domkirke", domkirken, "Aarhus Cathedral. Brick Gothic, 93 m long, spire to 96 m.", -1187, 90, 180),
+    "aarhus_domkirke": ("Aarhus Domkirke", domkirken, "Aarhus Cathedral. Brick Gothic, 93 m long, spire to 96 m.", -1195, 88, 180),
     "aabyhoj_kirke": ("Aabyhoj Kirke", aabyhoj, "Aabyhoj Church, 1945. Red brick with a tile roof.", -4468, -110, 204),
-    "sankt_pauls_kirke": ("Sankt Pauls Kirke", sankt_pauls, "St Paul's Church, 1887. Red brick with twin towers.", -1597, -1109, 95),
-    "vor_frue_kirke": ("Vor Frue Kirke", vor_frue, "Church of Our Lady, the old Dominican priory church. Brick Gothic.", -1537, 225, 175),
+    "sankt_pauls_kirke": ("Sankt Pauls Kirke", sankt_pauls, "St Paul's Church, 1887. Red brick with twin towers.", -1557, -1109, 95),
+    "vor_frue_kirke": ("Vor Frue Kirke", vor_frue, "Church of Our Lady, the old Dominican priory church. Brick Gothic.", -1529, 225, 175),
     # which end the tower is on is assumed (west), not read from the footprint
     "sankt_johannes_kirke": ("Sankt Johannes Kirke", sankt_johannes, "St John's Church, 1905. Red brick with a tall spire.", -1214, 1445, 165),
     "christianskirken": ("Christianskirken", christianskirken, "Christian's Church, 1958. Yellow brick.", -2119, 2385, 165),
-    "sankt_lukas_kirke": ("Sankt Lukas Kirke", sankt_lukas, "St Luke's Church, 1926. Brick with a copper-capped tower.", -2214, -1245, 9),
+    "sankt_lukas_kirke": ("Sankt Lukas Kirke", sankt_lukas, "St Luke's Church, 1926. Brick with a copper-capped tower.", -2207, -1241, 9),
 }
 
 

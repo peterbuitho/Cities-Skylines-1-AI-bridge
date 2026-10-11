@@ -365,12 +365,15 @@ LABELS = {"Aabyhoj Kirke": "Åbyhøj Kirke", "Gammel Vindmolle": "Tuesbøl Møll
           "Aarhus Universitet Aulaen": "Aarhus Universitet", "Ceres Park": "Ceres Park Stadion"}
 
 
-def label(name, x, z, angle, width, depth):
-    """Shows a landmark's name the way street names are shown: a short named footpath along its front.
-    Does nothing when a path of that name is there already."""
-    name = LABELS.get(name, name)
-    if any(s["name"] == name for s in call("/state/networks?service=Beautification&limit=65536")["segments"]):
-        return True
+def label(name, x, z, angle, width, depth, replace=False):
+    """Shows a landmark's name the way street names are shown, in capitals: a short named footpath along its front.
+    Does nothing when a path of that name is there already, unless replace is set (the building moved)."""
+    name = LABELS.get(name, name).upper()   # capitals set a landmark apart from the street names
+    for s in call("/state/networks?service=Beautification&limit=65536")["segments"]:
+        if s["name"] == name and not replace:
+            return True
+        if s["name"].upper() == name:        # an earlier sign: in small letters, or where the building stood
+            call("/commands/bulldoze", {"entityType": "netSegment", "id": s["id"]})
     a = math.radians(angle)
     front, along = (-math.sin(a), math.cos(a)), (math.cos(a), math.sin(a))
     cx, cz = x + front[0] * (depth / 2 + 6), z + front[1] * (depth / 2 + 6)
@@ -413,7 +416,7 @@ def run(registry, source):
                     call("/commands/bulldoze", {"entityType": "building", "id": g["id"]})
             r = call("/commands/place-building", {"dryRun": False, "buildingPrefab": prefab, "position": {"x": x, "z": z}, "angleDegrees": angle % 360})
             print(f"{name} at {x},{z} turned {angle % 360}:", r.get("ok"), r.get("error", ""))
-            label(name, x, z, angle, width * 8, length * 8)
+            label(name, x, z, angle, width * 8, length * 8, replace=True)
         elif step == "label":
             print(f"{name}: name sign", "ok" if label(name, x, z, angle, width * 8, length * 8) else "failed")
         else:

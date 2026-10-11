@@ -244,33 +244,35 @@ def bestseller():
     return m, kit.block_texture(2015, wall=(84, 80, 76), glass=(44, 58, 72), floors=5, shopfront=False)
 
 
+# Positions are OpenStreetMap footprint centres, moved by up to 96 m where the model would stand on a
+# road or track: the game's roads are wider than the streets and the models are simpler than the buildings.
 # key: (asset name, builder, description, x, z, angle)
 BUILDINGS = {
-    "toldboden": ("Toldboden", toldboden, "The old custom house, 1898. Red brick with three towers.", -1035, -49, 233),
-    "salling": ("Salling", salling, "Department store on Sondergade.", -1397, -183, 61),
+    "toldboden": ("Toldboden", toldboden, "The old custom house, 1898. Red brick with three towers.", -1019, -77, 233),
+    "salling": ("Salling", salling, "Department store on Sondergade.", -1383, -175, 61),
     "magasin": ("Magasin", magasin, "Department store on Immervad.", -1435, 119, 71),
-    "navitas": ("Navitas", navitas, "Engineering school and innovation centre on the harbour, 2014.", -950, 320, 15),
-    "dokk1": ("Dokk1", dokk1, "Library and citizens' service centre on the harbour front, 2015.", -975, -277, 38),
-    "isbjerget": ("Isbjerget", isbjerget, "The Iceberg housing on Aarhus O, 2013.", 9, 983, 42),
-    "musikhuset": ("Musikhuset", musikhuset, "The concert hall, 1982.", -1909, -345, 238),
+    "navitas": ("Navitas", navitas, "Engineering school and innovation centre on the harbour, 2014.", -908, 296, 15),
+    "dokk1": ("Dokk1", dokk1, "Library and citizens' service centre on the harbour front, 2015.", -944, -269, 38),
+    "isbjerget": ("Isbjerget", isbjerget, "The Iceberg housing on Aarhus O, 2013.", 25, 983, 42),
+    "musikhuset": ("Musikhuset", musikhuset, "The concert hall, 1982.", -1888, -333, 238),
     "lighthouse": ("Lighthouse", lighthouse, "Housing tower on Aarhus O, 142 m, 2022.", 122, 1057, 42),
-    "aarhus_big": ("AARhus", aarhus_big, "Housing block on Aarhus O by Bjarke Ingels Group.", -95, 775, 42),
+    "aarhus_big": ("AARhus", aarhus_big, "Housing block on Aarhus O by Bjarke Ingels Group.", -87, 775, 42),
     "windmill": ("Gammel Vindmolle", windmill, "An old windmill.", -2239, 375, 0),
     "den_gamle_by": ("Den Gamle By", den_gamle_by, "The Old Town open-air museum: half-timbered town houses.", -2346, 320, 0),
     "vaeksthusene": ("Vaeksthusene", vaeksthusene, "The glasshouses in the Botanical Garden, with the tropical dome.", -2238, 446, 0),
-    "prismet": ("Prismet", prismet, "Glass office tower beside Den Gamle By, 63 m, 2001.", -2292, 167, 0),
+    "prismet": ("Prismet", prismet, "Glass office tower beside Den Gamle By, 63 m, 2001.", -2324, 167, 0),
     # angle = the footprint's long axis; which long side is the front is not known
-    "aarhus_teater": ("Aarhus Teater", aarhus_teater, "The theatre on Bispetorv, 1900.", -1167, -21, 96),
+    "aarhus_teater": ("Aarhus Teater", aarhus_teater, "The theatre on Bispetorv, 1900.", -1186, 49, 96),
     "city_tower": ("Aarhus City Tower", city_tower, "Hotel and office tower beside the station, 94 m, 2014.", -1270, -625, 165),
-    "bruuns_galleri": ("Bruuns Galleri", bruuns_galleri, "Shopping centre beside Aarhus H, 2003.", -1528, -766, 15),
+    "bruuns_galleri": ("Bruuns Galleri", bruuns_galleri, "Shopping centre beside Aarhus H, 2003.", -1520, -766, 15),
     "ceres_panorama": ("Ceres Panorama", ceres_panorama, "Housing tower on the old Ceres brewery site, 70 m.", -2387, -147, 3),
-    "statsbiblioteket": ("Statsbiblioteket", statsbiblioteket, "The State Library with its book tower, 1963.", -1888, 1578, 21),
-    "aulaen": ("Aarhus Universitet Aulaen", aulaen, "The university's main building with the Aula, 1946.", -1782, 1613, 120),
+    "statsbiblioteket": ("Statsbiblioteket", statsbiblioteket, "The State Library with its book tower, 1963.", -1863, 1485, 21),
+    "aulaen": ("Aarhus Universitet Aulaen", aulaen, "The university's main building with the Aula, 1946.", -1797, 1609, 120),
     "stadium": ("Ceres Park", stadium, "The stadium in Marselisborg. Position within the sports park is estimated.", -2154, -2588, 177),
     "storcenter_nord": ("Storcenter Nord", storcenter_nord, "Shopping centre on Finlandsgade.", -2547, 1587, 78),
-    "bestseller": ("Bestseller", bestseller, "Office on the harbour, 2015.", -828, 394, 141),
+    "bestseller": ("Bestseller", bestseller, "Office on the harbour, 2015.", -828, 386, 141),
     "marselisborg_slot": ("Marselisborg Slot", marselisborg_slot, "The royal summer residence, 1902.", -1665, -3117, 123),
-    "paustian": ("Paustian", paustian, "Furniture house by the north harbour.", -793, 969, 0),
+    "paustian": ("Paustian", paustian, "Furniture house by the north harbour.", -810, 986, 0),
 }
 
 if __name__ == "__main__":
