@@ -324,6 +324,12 @@ namespace SkylinesAgentBridge
                 return RunOnSimulationThread(request, delegate { return CityCommands.UnlockArea(body); });
             }
 
+            if (request.Method == "POST" && request.Path == "/commands/set-ui")
+            {
+                string body = request.Body;
+                return RunOnGameThread(request, delegate { return SimulationCommands.SetUi(body); });
+            }
+
             if (request.Method == "POST" && request.Path == "/commands/create-asset")
             {
                 string body = request.Body;

@@ -29,6 +29,21 @@ namespace SkylinesAgentBridge
                 ",\"finalSpeed\":" + simulation.FinalSimulationSpeed + "}");
         }
 
+        // POST /commands/set-ui {"visible":false}: hides or shows the whole game interface, for
+        // screenshots and video. Street names are drawn in the world and stay.
+        public static CommandResult SetUi(string body)
+        {
+            bool visible = JsonUtil.GetBool(body, "visible", true);
+            // The game's own free camera mode is what hides every panel; UIView.Show leaves the toolbar.
+            CameraController camera = ToolsModifierControl.cameraController;
+            if (camera != null)
+            {
+                camera.m_freeCamera = !visible;
+            }
+            ColossalFramework.UI.UIView.Show(visible);
+            return CommandResult.FromJson("{\"ok\":true,\"visible\":" + JsonUtil.Bool(visible) + "}");
+        }
+
         public static CommandResult SetCamera(string body)
         {
             CameraController camera = ToolsModifierControl.cameraController;
