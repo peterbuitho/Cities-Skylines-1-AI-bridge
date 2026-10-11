@@ -1,4 +1,4 @@
-# citybridge
+# Cities Skylines 1 AI bridge
 
 Puts real street networks into Cities: Skylines 1. It reads OpenStreetMap data, turns it into a build plan, and builds the plan in a running game through the Skylines Agent Bridge mod. Use the build of the mod in `mod/` (see `mod/README.md`): it is thread-safe and lists whole cities, which the stock mod does not. See `PLAN.md` for the design and what is still to come.
 

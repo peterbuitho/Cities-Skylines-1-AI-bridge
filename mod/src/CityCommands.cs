@@ -97,6 +97,16 @@ namespace SkylinesAgentBridge
             return CommandResult.FromJson("{\"ok\":true,\"district\":" + district + ",\"name\":\"" + JsonUtil.Escape(name) + "\"}");
         }
 
+        // POST /commands/refresh-water-grid: recomputes which ground every water pipe serves, for the
+        // whole map. The game redoes this only round a pipe that changes, and then finds other pipes
+        // by their middle point, so a long pipe loses ground wherever another pipe is built or removed
+        // far from its middle. Call it after any pipe work when pipes are long.
+        public static CommandResult RefreshWaterGrid()
+        {
+            Singleton<WaterManager>.instance.UpdateGrid(-8640f, -8640f, 8640f, 8640f);
+            return CommandResult.FromJson("{\"ok\":true}");
+        }
+
         // POST /commands/name-park {"name":"Tivoli Friheden","x":..,"z":..,"radius":200}: names the park
         // area at a position. Where there is none, an amusement park area of that radius is made first.
         public static CommandResult NamePark(string body)
