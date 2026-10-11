@@ -134,7 +134,7 @@ namespace SkylinesAgentBridge
                 ",\"notLoaded\":" + (prefabs.Length - found.Count) + "}");
         }
 
-        // POST /commands/apply-style {"name":"Aarhus"}: every district, and the land outside all
+        // POST /commands/apply-style {"name":"Aarhus","extra":"L1 1x1 Detached;..."}: every district, and the land outside all
         // districts, grows from this style. An empty name goes back to the game's own buildings.
         public static CommandResult ApplyStyle(string body)
         {
@@ -154,6 +154,28 @@ namespace SkylinesAgentBridge
             {
                 return CommandResult.Fail("Style was not found: " + name + ". Loaded styles: " + known);
             }
+            // A style file can only name custom assets. "extra" adds the game's own buildings to the
+            // loaded style, for this session only: send it again after every load.
+            int added = 0;
+            string extra = JsonUtil.GetString(body, "extra", "");
+            if (index != 0 && extra.Length > 0)
+            {
+                DistrictStyle style = districts.m_Styles[index - 1];
+                // Not FindLoaded: for a name that is not loaded it crashes here, inside Loading Screen Mod's name resolver.
+                System.Collections.Generic.HashSet<string> wanted = new System.Collections.Generic.HashSet<string>(extra.Split(';'));
+                int loaded = PrefabCollection<BuildingInfo>.LoadedCount();
+                for (uint i = 0; i < loaded; i++)
+                {
+                    BuildingInfo info = PrefabCollection<BuildingInfo>.GetLoaded(i);
+                    if (info != null && wanted.Contains(info.name) && !style.Contains(info))
+                    {
+                        style.Add(info);
+                        added++;
+                    }
+                }
+                typeof(BuildingManager).GetMethod("RefreshStyleBuildings", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(Singleton<BuildingManager>.instance, null);
+            }
             int changed = 0;
             for (int d = 0; d < districts.m_districts.m_buffer.Length; d++)
             {
@@ -164,6 +186,7 @@ namespace SkylinesAgentBridge
                 }
             }
             return CommandResult.FromJson("{\"ok\":true,\"style\":\"" + JsonUtil.Escape(name) + "\",\"districts\":" + changed +
+                ",\"added\":" + added +
                 ",\"buildingsInStyle\":" + (index == 0 ? 0 : districts.m_Styles[index - 1].Count) + "}");
         }
     }

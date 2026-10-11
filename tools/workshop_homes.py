@@ -5,7 +5,8 @@ to pick them. This script makes them the rule:
 
   style   saves a district style "Aarhus" holding every Workshop house that is loaded
           (restart the game afterwards: styles are read when a city loads)
-  apply   makes every district grow from that style
+  apply   makes every district grow from that style, with the game's own houses added for the
+          densities, levels and lot sizes no Workshop house covers. Run it after every load.
   swap    replaces existing houses of the game's own with a Workshop house of the same density,
           lot size and level, in the same place, facing the same way, and steps a Workshop house
           that complains of low land value down to the lowest level. [--limit N] stops after N.
@@ -27,6 +28,16 @@ def workshop_homes():
     return [p for p in prefabs if p["service"] == "Residential" and WORKSHOP.match(p["name"])]
 
 
+def fill_ins(homes):
+    """The game's own houses for every density, level and lot size that no Workshop house covers.
+    Without them most free lots get no house and a house cannot move up a level."""
+    kind = lambda p: (p["subService"], p["level"], p["width"], p["length"])
+    covered = {kind(p) for p in homes}
+    prefabs = call("/prefabs/buildings?limit=65536")["buildings"]
+    return [p for p in prefabs if p["service"] == "Residential" and p["subService"] in ("ResidentialLow", "ResidentialHigh")
+            and not WORKSHOP.match(p["name"]) and kind(p) not in covered]
+
+
 def main():
     step = sys.argv[1] if len(sys.argv) > 1 else ""
     homes = workshop_homes()
@@ -37,7 +48,8 @@ def main():
         for (sub, level, size), n in sorted(kinds.items()):
             print(f"  {n:2d} {sub} {level} {size}")
     elif step == "apply":
-        print(call("/commands/apply-style", {"name": STYLE}))
+        # a style file cannot hold the game's own houses: they are added to the loaded style, each session
+        print(call("/commands/apply-style", {"name": STYLE, "extra": ";".join(p["name"] for p in fill_ins(homes))}))
     elif step == "swap":
         limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else None
         by_lot = collections.defaultdict(list)

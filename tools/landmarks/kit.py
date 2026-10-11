@@ -331,8 +331,58 @@ def call(path, body=None):
         return json.loads(e.read().decode("utf-8"))
 
 
+def beside_road(prefab, x, z, width, depth, roads, growables, taken):
+    """Places a building beside the street nearest to x,z, facing it. taken is a list of (x, z, radius)
+    already used and gains the new one. Houses in the way are removed. False when there is no room."""
+    reach = math.hypot(width, depth) / 2
+    for s in sorted(roads, key=lambda s: (s["middle"]["x"] - x) ** 2 + (s["middle"]["z"] - z) ** 2)[:25]:
+        dx, dz = s["end"]["x"] - s["start"]["x"], s["end"]["z"] - s["start"]["z"]
+        length = math.hypot(dx, dz)
+        if length < 12:
+            continue
+        nx, nz = -dz / length, dx / length
+        side = 1 if (x - s["middle"]["x"]) * nx + (z - s["middle"]["z"]) * nz >= 0 else -1
+        px, pz = s["middle"]["x"] + side * nx * (9 + depth / 2), s["middle"]["z"] + side * nz * (9 + depth / 2)
+        if any(o is not s and math.hypot(o["middle"]["x"] - px, o["middle"]["z"] - pz) < reach * 0.8 for o in roads):
+            continue
+        if any(math.hypot(tx - px, tz - pz) < reach + r for tx, tz, r in taken):
+            continue
+        for g in growables:
+            if math.hypot(g["position"]["x"] - px, g["position"]["z"] - pz) < reach + 6:
+                call("/commands/bulldoze", {"entityType": "building", "id": g["id"]})
+        # the front (-sin a, cos a) points back at the street
+        angle = math.degrees(math.atan2(side * nx, -side * nz)) % 360
+        r = call("/commands/place-building", {"dryRun": False, "buildingPrefab": prefab,
+                                              "position": {"x": round(px, 1), "z": round(pz, 1)}, "angleDegrees": round(angle, 1)})
+        if r.get("ok"):
+            taken.append((px, pz, reach))
+            return True
+    return False
+
+
+# what the name sign says, where the asset name had to do without Danish letters
+LABELS = {"Aabyhoj Kirke": "Åbyhøj Kirke", "Gammel Vindmolle": "Tuesbøl Mølle", "Vaeksthusene": "Væksthusene",
+          "Aarhus Universitet Aulaen": "Aarhus Universitet", "Ceres Park": "Ceres Park Stadion"}
+
+
+def label(name, x, z, angle, width, depth):
+    """Shows a landmark's name the way street names are shown: a short named footpath along its front.
+    Does nothing when a path of that name is there already."""
+    name = LABELS.get(name, name)
+    if any(s["name"] == name for s in call("/state/networks?service=Beautification&limit=65536")["segments"]):
+        return True
+    a = math.radians(angle)
+    front, along = (-math.sin(a), math.cos(a)), (math.cos(a), math.sin(a))
+    cx, cz = x + front[0] * (depth / 2 + 6), z + front[1] * (depth / 2 + 6)
+    half = min(max(width / 2, 24), 45)
+    r = call("/commands/build-network", {"dryRun": False, "roadPrefab": "Pedestrian Pavement", "name": name,
+                                         "start": {"x": round(cx - along[0] * half, 1), "z": round(cz - along[1] * half, 1)},
+                                         "end": {"x": round(cx + along[0] * half, 1), "z": round(cz + along[1] * half, 1)}})
+    return bool(r.get("ok"))
+
+
 def run(registry, source):
-    """generate | create | place, for every key or the keys named on the command line.
+    """generate | create | place | label, for every key or the keys named on the command line.
 
     registry: key -> (asset name, builder, description, x, z, angle). The mod turns a building so
     that its front, model +z, faces (-sin angle, cos angle); model +x points along (cos, sin).
@@ -363,8 +413,11 @@ def run(registry, source):
                     call("/commands/bulldoze", {"entityType": "building", "id": g["id"]})
             r = call("/commands/place-building", {"dryRun": False, "buildingPrefab": prefab, "position": {"x": x, "z": z}, "angleDegrees": angle % 360})
             print(f"{name} at {x},{z} turned {angle % 360}:", r.get("ok"), r.get("error", ""))
+            label(name, x, z, angle, width * 8, length * 8)
+        elif step == "label":
+            print(f"{name}: name sign", "ok" if label(name, x, z, angle, width * 8, length * 8) else "failed")
         else:
-            sys.exit("step must be generate, create or place")
+            sys.exit("step must be generate, create, place or label")
 
 
 def save(out, mesh, image, source, texture_size=SIZE):

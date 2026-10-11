@@ -189,6 +189,20 @@ namespace SkylinesAgentBridge
             json.Append(",\"commercial\":").Append(zones.m_actualCommercialDemand);
             json.Append(",\"workplace\":").Append(zones.m_actualWorkplaceDemand).Append("}");
 
+            // The numbers ZoneManager.CalculateResidentialDemand works from, for the whole city.
+            District city = Singleton<DistrictManager>.instance.m_districts.m_buffer[0];
+            json.Append(",\"jobs\":").Append(city.m_commercialData.m_finalHomeOrWorkCount + city.m_industrialData.m_finalHomeOrWorkCount + city.m_officeData.m_finalHomeOrWorkCount + city.m_playerData.m_finalHomeOrWorkCount);
+            json.Append(",\"emptyJobs\":").Append(city.m_commercialData.m_finalEmptyCount + city.m_industrialData.m_finalEmptyCount + city.m_officeData.m_finalEmptyCount + city.m_playerData.m_finalEmptyCount);
+            json.Append(",\"homePlaces\":").Append(city.m_residentialData.m_finalHomeOrWorkCount);
+            json.Append(",\"emptyHomePlaces\":").Append(city.m_residentialData.m_finalEmptyCount);
+            json.Append(",\"unemployed\":").Append(city.m_educated0Data.m_finalUnemployed + city.m_educated1Data.m_finalUnemployed + city.m_educated2Data.m_finalUnemployed + city.m_educated3Data.m_finalUnemployed);
+            json.Append(",\"electricityCapacity\":").Append(city.GetElectricityCapacity());
+            json.Append(",\"electricityConsumption\":").Append(city.GetElectricityConsumption());
+            json.Append(",\"garbageAmount\":").Append(city.GetGarbageAmount());
+            json.Append(",\"garbageCapacity\":").Append(city.GetGarbageCapacity());
+            json.Append(",\"deadCount\":").Append(city.GetDeadCount());
+            json.Append(",\"homeless\":").Append(city.m_educated0Data.m_finalHomeless + city.m_educated1Data.m_finalHomeless + city.m_educated2Data.m_finalHomeless + city.m_educated3Data.m_finalHomeless);
+
             System.Reflection.FieldInfo field = typeof(ZoneManager).GetField("m_goodAreaFound",
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
             short[] good = field == null ? null : field.GetValue(zones) as short[];

@@ -4,7 +4,7 @@ Positions and footprint directions are from OpenStreetMap where the building is 
 heights and colours are from what is known of each building. Simple models: flat walls with the
 windows painted on. Meant to be recognisable, not exact.
 
-Use (from the repo root): py tools\\landmarks\\buildings.py generate | create | place [key ...]
+Use (from the repo root): py tools\\landmarks\\buildings.py generate | create | place | label [key ...]
 """
 import math
 
@@ -159,6 +159,91 @@ def prismet():
     return m, kit.block_texture(2001, wall=(170, 190, 200), glass=(58, 96, 124), floors=18, shopfront=False, roof=(150, 170, 182))
 
 
+def marselisborg_slot():
+    """Marselisborg Slot, 1902: the royal summer residence, a white house with round corner towers."""
+    m = kit.Mesh()
+    m.hall(-19, 19, -8, 8, 11, 17)
+    for x in (-19, 19):
+        m.frustum(x, 8, 4.5, 4.5, 0, 15, band=kit.WALL)             # the round towers on the garden side
+        m.frustum(x, 8, 4.8, 0.3, 15, 21, band=kit.SPIRE)
+    return m, kit.texture(1902, brick_colour=(240, 238, 230), roof=kit.SLATE, spire=kit.SLATE, pointed=False, clock=False, tall_windows=False)
+
+
+YELLOW_BRICK = (204, 176, 122)   # the university's brick
+
+
+def aarhus_teater():
+    """Aarhus Teater, 1900: a pale art nouveau front with a gable, the auditorium and a higher stage house."""
+    m = kit.Mesh()
+    m.hall(-40, -8, -22, 22, 16, 24)                                # foyer and auditorium, gable to the square
+    m.block(-8, 40, -25, 25, 20)                                    # back of house
+    m.block(-4, 22, -18, 18, 30)                                    # stage tower
+    return m, kit.texture(1900, brick_colour=(212, 196, 160), roof=kit.COPPER, spire=kit.COPPER, pointed=False, clock=False)
+
+
+def city_tower():
+    """Aarhus City Tower (Comwell), 2014: a 94 m dark glass slab beside the station."""
+    m = kit.Mesh()
+    m.block(-24, 24, -13, 13, 94)
+    return m, kit.block_texture(2014, wall=(70, 76, 84), glass=(40, 62, 84), floors=22, shopfront=False)
+
+
+def bruuns_galleri():
+    """Bruuns Galleri, 2003: the shopping centre beside Aarhus H. About three fifths of its real length."""
+    m = kit.Mesh()
+    m.block(-56, 56, -34, 34, 14)
+    m.block(-40, 40, -8, 8, 18)                                     # the glass roof over the mall street
+    return m, kit.block_texture(2003, wall=(214, 208, 196), glass=(64, 92, 116), floors=3)
+
+
+def ceres_panorama():
+    """Ceres Panorama, 2018: a 70 m housing tower on the old brewery site."""
+    m = kit.Mesh()
+    m.block(-17, 17, -16, 16, 70)
+    return m, kit.block_texture(2018, wall=(226, 224, 216), glass=(60, 84, 108), floors=20, shopfront=False)
+
+
+def statsbiblioteket():
+    """The State Library (Det Kgl. Bibliotek), 1963: low yellow brick wings and the book tower."""
+    m = kit.Mesh()
+    m.block(-47, 47, -25, 25, 12)
+    m.block(-12, 12, -12, 12, 45, base=12, band=kit.TOWER)          # the book tower
+    return m, kit.block_texture(1963, wall=YELLOW_BRICK, glass=(48, 60, 74), floors=3, shopfront=False, roof=(170, 140, 96))
+
+
+def aulaen():
+    """The university's main building with the Aula, 1946: yellow brick under yellow tile, a tall gable."""
+    m = kit.Mesh()
+    m.hall(-27, 27, -12, 12, 15, 26)
+    m.hall(-27, -15, -30, -12, 10, 17, along_x=False)               # a wing to the side
+    return m, kit.texture(1946, brick_colour=YELLOW_BRICK, roof=(196, 160, 98), spire=(196, 160, 98), pointed=False, clock=False)
+
+
+def stadium():
+    """Ceres Park, the stadium: four stands round the pitch. About two thirds of its real size."""
+    m = kit.Mesh()
+    m.block(-50, 50, 32, 46, 18, band=kit.TOWER)                    # the long stands
+    m.block(-50, 50, -46, -32, 18, band=kit.TOWER)
+    m.block(-50, -38, -32, 32, 12, band=kit.TOWER)                  # the ends
+    m.block(38, 50, -32, 32, 12, band=kit.TOWER)
+    return m, kit.block_texture(1920, wall=(206, 204, 198), glass=(70, 80, 92), floors=3, shopfront=False, roof=(150, 152, 156))
+
+
+def storcenter_nord():
+    """Storcenter Nord, the shopping centre on Finlandsgade. Under half its real length."""
+    m = kit.Mesh()
+    m.block(-55, 55, -32, 32, 13)
+    return m, kit.block_texture(1977, wall=(198, 192, 180), glass=(58, 80, 100), floors=2)
+
+
+def bestseller():
+    """The Bestseller office on the harbour, 2015: dark stone blocks of uneven height round courtyards."""
+    m = kit.Mesh()
+    for k, h in enumerate((16, 26, 12, 22, 18)):
+        m.block(-60 + k * 24, -36 + k * 24, -26, 26, h)
+    return m, kit.block_texture(2015, wall=(84, 80, 76), glass=(44, 58, 72), floors=5, shopfront=False)
+
+
 # key: (asset name, builder, description, x, z, angle)
 BUILDINGS = {
     "toldboden": ("Toldboden", toldboden, "The old custom house, 1898. Red brick with three towers.", -1035, -49, 233),
@@ -174,6 +259,17 @@ BUILDINGS = {
     "den_gamle_by": ("Den Gamle By", den_gamle_by, "The Old Town open-air museum: half-timbered town houses.", -2346, 320, 0),
     "vaeksthusene": ("Vaeksthusene", vaeksthusene, "The glasshouses in the Botanical Garden, with the tropical dome.", -2238, 446, 0),
     "prismet": ("Prismet", prismet, "Glass office tower beside Den Gamle By, 63 m, 2001.", -2292, 167, 0),
+    # angle = the footprint's long axis; which long side is the front is not known
+    "aarhus_teater": ("Aarhus Teater", aarhus_teater, "The theatre on Bispetorv, 1900.", -1167, -21, 96),
+    "city_tower": ("Aarhus City Tower", city_tower, "Hotel and office tower beside the station, 94 m, 2014.", -1270, -625, 165),
+    "bruuns_galleri": ("Bruuns Galleri", bruuns_galleri, "Shopping centre beside Aarhus H, 2003.", -1528, -766, 15),
+    "ceres_panorama": ("Ceres Panorama", ceres_panorama, "Housing tower on the old Ceres brewery site, 70 m.", -2387, -147, 3),
+    "statsbiblioteket": ("Statsbiblioteket", statsbiblioteket, "The State Library with its book tower, 1963.", -1888, 1578, 21),
+    "aulaen": ("Aarhus Universitet Aulaen", aulaen, "The university's main building with the Aula, 1946.", -1782, 1613, 120),
+    "stadium": ("Ceres Park", stadium, "The stadium in Marselisborg. Position within the sports park is estimated.", -2154, -2588, 177),
+    "storcenter_nord": ("Storcenter Nord", storcenter_nord, "Shopping centre on Finlandsgade.", -2547, 1587, 78),
+    "bestseller": ("Bestseller", bestseller, "Office on the harbour, 2015.", -828, 394, 141),
+    "marselisborg_slot": ("Marselisborg Slot", marselisborg_slot, "The royal summer residence, 1902.", -1665, -3117, 123),
     "paustian": ("Paustian", paustian, "Furniture house by the north harbour.", -793, 969, 0),
 }
 

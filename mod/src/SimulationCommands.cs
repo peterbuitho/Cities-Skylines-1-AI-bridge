@@ -24,8 +24,10 @@ namespace SkylinesAgentBridge
             simulation.ForcedSimulationPaused = false;
             simulation.SelectedSimulationSpeed = speed;
             simulation.SimulationPaused = paused;
+            DemandBoost.Fast = JsonUtil.GetBool(body, "fastDemand", DemandBoost.Fast);
 
             return CommandResult.FromJson("{\"ok\":true,\"paused\":" + JsonUtil.Bool(simulation.SimulationPaused) +
+                ",\"fastDemand\":" + JsonUtil.Bool(DemandBoost.Fast) +
                 ",\"selectedSpeed\":" + simulation.SelectedSimulationSpeed +
                 ",\"finalSpeed\":" + simulation.FinalSimulationSpeed + "}");
         }

@@ -59,12 +59,31 @@ def vor_frue():
     return m, kit.texture(1250, brick_colour=(158, 76, 54), roof=kit.TILE, spire=kit.COPPER, clock=False)
 
 
+def sankt_johannes():
+    m = kit.Mesh()
+    m.hall(-14, 20, -9, 9, 13, 22)                # nave
+    m.hall(2, 12, -13, 13, 13, 21, along_x=False)  # transept
+    m.hall(20, 25, -6, 6, 11, 17)                 # choir
+    m.tower(-23, -14, -4.5, 4.5, 34, 58)          # west tower with a tall spire
+    return m, kit.texture(1905, brick_colour=(162, 74, 54), roof=kit.SLATE, spire=kit.COPPER)
+
+
+def christianskirken():
+    m = kit.Mesh()
+    m.hall(-12, 21, -10, 10, 12, 20)              # the wide nave of 1958
+    m.tower(-21, -14, -13, -6, 30, 36)            # the tower stands beside the front
+    return m, kit.texture(1958, brick_colour=(204, 176, 122), roof=kit.TILE, spire=kit.COPPER, pointed=False, clock=False)
+
+
 # key: (asset name, builder, description, footprint centre x, z, tower_towards in degrees)
 CHURCHES = {
     "aarhus_domkirke": ("Aarhus Domkirke", domkirken, "Aarhus Cathedral. Brick Gothic, 93 m long, spire to 96 m.", -1187, 90, 180),
     "aabyhoj_kirke": ("Aabyhoj Kirke", aabyhoj, "Aabyhoj Church, 1945. Red brick with a tile roof.", -4468, -110, 204),
     "sankt_pauls_kirke": ("Sankt Pauls Kirke", sankt_pauls, "St Paul's Church, 1887. Red brick with twin towers.", -1597, -1109, 95),
     "vor_frue_kirke": ("Vor Frue Kirke", vor_frue, "Church of Our Lady, the old Dominican priory church. Brick Gothic.", -1537, 225, 175),
+    # which end the tower is on is assumed (west), not read from the footprint
+    "sankt_johannes_kirke": ("Sankt Johannes Kirke", sankt_johannes, "St John's Church, 1905. Red brick with a tall spire.", -1214, 1445, 165),
+    "christianskirken": ("Christianskirken", christianskirken, "Christian's Church, 1958. Yellow brick.", -2119, 2385, 165),
     "sankt_lukas_kirke": ("Sankt Lukas Kirke", sankt_lukas, "St Luke's Church, 1926. Brick with a copper-capped tower.", -2214, -1245, 9),
 }
 

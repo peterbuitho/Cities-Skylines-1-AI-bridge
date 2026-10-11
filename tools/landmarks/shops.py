@@ -98,33 +98,9 @@ def main():
     placed = skipped = 0
     for chain, x, z in shops:
         width, depth, _ = SIZES[CHAINS[chain][4]]
-        reach = math.hypot(width, depth) / 2
-        done = False
-        for s in sorted(roads, key=lambda s: (s["middle"]["x"] - x) ** 2 + (s["middle"]["z"] - z) ** 2)[:25]:
-            dx, dz = s["end"]["x"] - s["start"]["x"], s["end"]["z"] - s["start"]["z"]
-            length = math.hypot(dx, dz)
-            if length < 12:
-                continue
-            nx, nz = -dz / length, dx / length
-            side = 1 if (x - s["middle"]["x"]) * nx + (z - s["middle"]["z"]) * nz >= 0 else -1
-            px, pz = s["middle"]["x"] + side * nx * (9 + depth / 2), s["middle"]["z"] + side * nz * (9 + depth / 2)
-            if any(o is not s and math.hypot(o["middle"]["x"] - px, o["middle"]["z"] - pz) < reach * 0.8 for o in roads):
-                continue
-            if any(math.hypot(tx - px, tz - pz) < reach + r for tx, tz, r in taken):
-                continue
-            for g in growables:
-                if math.hypot(g["position"]["x"] - px, g["position"]["z"] - pz) < reach + 6:
-                    kit.call("/commands/bulldoze", {"entityType": "building", "id": g["id"]})
-            name = asset_name(chain)
-            # the front (-sin a, cos a) points back at the street
-            angle = math.degrees(math.atan2(side * nx, -side * nz)) % 360
-            r = kit.call("/commands/place-building", {"dryRun": False, "buildingPrefab": f"{name}.{name}_Data",
-                                                      "position": {"x": round(px, 1), "z": round(pz, 1)}, "angleDegrees": round(angle, 1)})
-            if r.get("ok"):
-                taken.append((px, pz, reach))
-                placed += 1
-                done = True
-                break
+        name = asset_name(chain)
+        done = kit.beside_road(f"{name}.{name}_Data", x, z, width, depth, roads, growables, taken)
+        placed += done
         skipped += not done
     print(f"placed {placed}, no room for {skipped}")
 
