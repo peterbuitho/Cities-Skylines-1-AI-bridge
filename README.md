@@ -34,16 +34,30 @@ py tools\thin_streets.py out\aarhus.plan.json 2500 --live  # small streets only 
 
 ## Zones, names and utilities from real land use
 
-Zoned land only develops inside map tiles the city owns, near a powered building. Buy the tiles first (the mod's `POST /commands/unlock-area {"x":..,"z":..}`, one tile per call, each touching an owned one), then:
+Zoned land only develops inside map tiles the city owns, near a powered building. Buy the tiles first (the mod's `POST /commands/unlock-area {"x":..,"z":..}`, one tile per call, each touching an owned one), then zone.
+
+`tools/zones.py` reads two kinds of source:
+
+- **Danish municipal plan frames** (kommuneplanrammer, open data from plandata.dk). The best source for Denmark: every area has an official use and a floor area ratio, which gives the density. `751` is the municipality code for Aarhus.
+- **OpenStreetMap land use**, anywhere in the world. Coarser, with very little commercial land, but it carries the place names that become districts.
 
 ```powershell
+curl.exe -A citybridge -o data\aarhus.plandata.json "https://geoserver.plandata.dk/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=pdk:theme_pdk_kommuneplanramme_vedtaget_v&outputFormat=application/json&srsName=EPSG:4326&cql_filter=komnr=751"
 curl.exe -A citybridge -o data\aarhus.landuse.osm.json --data-urlencode "data@cities\aarhus.landuse.overpassql" https://overpass-api.de/api/interpreter
-# bounds of the owned tiles, then the city centre (high density within 1500 m of it)
-py -X utf8 tools\zones.py data\aarhus.landuse.osm.json cities\aarhus.toml "-4800,-2880,960,2880" "-1187,58" --live
-py -X utf8 tools\utilities.py data\aarhus.landuse.osm.json cities\aarhus.toml "-4800,-2880,960,2880" "-1187,58" --live
+
+# arguments: source, city, bounds of the owned tiles, city centre (only used for OpenStreetMap density)
+py -X utf8 tools\zones.py data\aarhus.landuse.osm.json cities\aarhus.toml "-4800,-2880,960,2880" "-1187,58" --live   # names the districts
+py -X utf8 tools\zones.py data\aarhus.plandata.json cities\aarhus.toml "-4800,-2880,960,2880" "-1187,58" --live      # zones by the plan
+py -X utf8 tools\utilities.py data\aarhus.plandata.json cities\aarhus.toml "-4800,-2880,960,2880" "-1187,58" --live
 ```
 
-`zones.py` zones each piece of land by the OpenStreetMap land use area it lies in, unzones everything else, and turns suburbs, quarters and neighbourhoods into named districts. `utilities.py` lays a water pipe grid under the zoned land and seeds wind turbines and water towers.
+`zones.py` zones each piece of land by the area it lies in and unzones everything else; cells with a building are left alone. `utilities.py` lays a water pipe grid under the zoned land and seeds wind turbines and water towers; run it once, it does not skip what is already there.
+
+To put a neighbourhood's small streets back into a thinned city (then run `zones.py` again to zone them):
+
+```powershell
+py -X utf8 tools\add_streets.py out\aarhus.plan.json "-3967,-85" 1100 --live   # Åbyhøj
+```
 
 ## Light rail as metro
 

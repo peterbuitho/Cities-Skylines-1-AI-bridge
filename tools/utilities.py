@@ -28,10 +28,10 @@ def straight(a, b):
 
 def main():
     live = "--live" in sys.argv
-    osm = json.load(open(sys.argv[1], encoding="utf-8"))["elements"]
+    data = json.load(open(sys.argv[1], encoding="utf-8"))
     bounds = [float(v) for v in sys.argv[3].split(",")]
     centre = [float(v) for v in sys.argv[4].split(",")]
-    cells, _ = plan(osm, projector(tomllib.load(open(sys.argv[2], "rb"))), bounds, centre)
+    cells, _ = plan(data, projector(tomllib.load(open(sys.argv[2], "rb"))), bounds, centre)
     zoned = [p for p, zone in cells.items() if zone != "Unzoned"]
 
     # grid nodes with zoned land in reach

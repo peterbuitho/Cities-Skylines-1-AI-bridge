@@ -15,7 +15,7 @@ Found on the way:
 - **Three of the four incoming highway connections had no road to the city.** Five link roads named "Motorvejstilslutning" join the map's raised highways to the nearest streets. The outgoing connection at (-8646, 6159) is still unlinked (548 m gap).
 - **One-way roads run from start node to end node.** Checked in `RoadBaseAI.UpdateOutsideFlags`. A map-edge building flagged `Outgoing` is where traffic enters the map.
 - **Diagnostics in `mod/`:** `GET /state/move-in` (outside connections, homes, who is moving in, route probes from each entrance) and `GET /state/route?fx&fz&tx&tz&drive&max` (one route search between two points; `fz=-1` or `tz=-1` means the x value is a segment id).
-- **Zoned land only develops inside owned map tiles.** The city owns one tile: x -2880..-960, z -960..960. Zone cells outside it are never valid, so the industrial area at (-3400, -600) stayed empty, residents had no jobs, and housing demand fell to zero (`ZoneManager.CalculateResidentialDemand` subtracts unemployment). `GET /state/growth` shows it: free rows per zone, the demand the game really uses, and its good-place counter. `POST /commands/unlock-area` buys a tile; the game's population milestone per tile is bypassed through 81 Tiles' "ignore unlocking" switch. The city now owns the 3x3 block around the centre: x -4800..960, z -2880..2880, zoned from OpenStreetMap land use by `tools/zones.py` with 28 named districts, and piped and powered by `tools/utilities.py`. `/state/areas` uses the 5x5 grid and is off by two tiles when 81 Tiles is installed.
+- **Zoned land only develops inside owned map tiles.** The city owns one tile: x -2880..-960, z -960..960. Zone cells outside it are never valid, so the industrial area at (-3400, -600) stayed empty, residents had no jobs, and housing demand fell to zero (`ZoneManager.CalculateResidentialDemand` subtracts unemployment). `GET /state/growth` shows it: free rows per zone, the demand the game really uses, and its good-place counter. `POST /commands/unlock-area` buys a tile; the game's population milestone per tile is bypassed through 81 Tiles' "ignore unlocking" switch. The city now owns the 3x3 block around the centre: x -4800..960, z -2880..2880, zoned from the municipal plan (plandata.dk kommuneplanrammer: official use and floor area ratio per area) by `tools/zones.py`, with 28 districts named from OpenStreetMap places, and piped and powered by `tools/utilities.py`. `/state/areas` uses the 5x5 grid and is off by two tiles when 81 Tiles is installed.
 - **A water or sewage building only joins pipes that are already there when it is placed.** Lay the pipe first, then place the building on it. Eight outlets placed first and piped afterwards stayed "not connected" until they were removed and placed again.
 - **Inside owned tiles, land develops only near a powered building.** `ZoneBlock.IsGoodPlace` wants a building that carries electricity within about 40 m. Seed each new zone with a wind turbine.
 - **A transport line's reported length is travel time, not metres**, when its route mixes walking and riding (`PathFind` stores duration in `m_length`). Probably why the 6.5 km metro line reads 38.9 km; not verified.
@@ -30,6 +30,24 @@ Found on the way:
 - 55 segments sit in open water (harbour piers) and were left out; 140 bridge and tunnel segments are flat.
 - Buildings face `(-sin a, cos a)` for `angleDegrees = a`. Pipes and power lines only join at shared end points.
 - Coordinates are world metres, origin at the map centre, +x east, +z north. `name` works, Danish letters included. The JSON reader in the bridge does not understand escapes, so names must not contain `"` or `\`.
+
+## Goal: a real Aarhus simulator
+
+Zones, plants, housing, buildings, landmarks and transport facilities should be as close to reality as the game allows. Where things stand, and the source to use for each:
+
+| What | Source | State |
+|---|---|---|
+| Streets and names | OpenStreetMap | Main roads everywhere; small streets within 2.5 km of the centre and in Åbyhøj. Limited by the path finder to roughly 13,000-17,000 segments. |
+| Zones and density | plandata.dk municipal plan frames | Done for the 9 owned tiles (`tools/zones.py`). |
+| District names | OpenStreetMap places | 28 districts as circles. Real boundaries: plandata `distrikt`, or DAGI sogne/postnumre. |
+| Rail | the map's own line, OpenStreetMap | Aarhus H placed and joined. Other stations not placed. |
+| Letbanen | OpenStreetMap light rail | Metro stand-in, 12 stations (`tools/metro.py`). Outer stops and branches missing. |
+| Power, water, sewage, waste | OpenStreetMap `power=plant`, `man_made=water_works/wastewater_plant`; Energistyrelsen's plant register for capacity | `tools/infrastructure.py` written; data not yet fetched (Overpass busy). Today the city runs on seeded wind turbines, water towers and shore outlets. Note: the real plants are mostly outside the map (Studstrupværket) or outside the owned tiles (Lisbjerg). |
+| Harbour, bus station, ferry, airport | OpenStreetMap | Not started. The game has Harbor, Cargo Harbor, Ferry Harbor, Bus Station; the airport is outside the map. |
+| Schools, hospitals, fire, police | OpenStreetMap `amenity=*` | Not started; today's service buildings are placed where complaints came from. |
+| Landmarks | hand-picked list with coordinates | Cathedral placed (game model). ARoS, Rådhuset, Dokk1, Musikhuset, Den Gamle By, stadium: need custom assets or stand-ins. |
+| Real building shapes | GeoDanmark/OSM footprints, Danish height model | Not started. Needs custom assets: either Steam Workshop items that already exist, or generated block models loaded by a mod. Open question which. |
+| Bridges, tunnels, curves | OpenStreetMap `bridge`/`tunnel`/`layer` | Roads are still flat straight pieces; the mod can now build curves. |
 
 ## Architecture
 
@@ -109,7 +127,7 @@ Required: Skylines Agent Bridge. Recommended: TM:PE, Move It, Network Anarchy, N
 - How many small streets can come back before the path finder overflows again? 13,400 segments work; the edge has not been measured.
 - Do newcomers use the train station at the Aarhus H site? It is placed and joined to the line; arrivals by rail are not yet confirmed.
 - Letbanen runs as a metro stand-in (no tram pieces in this install): `tools/metro.py` built 12 stations from Aarhus H to Universitetshospitalet along the OpenStreetMap light-rail track and one line through them. Still to do: the stops further out (Lisbjerg, Lystrup, Odder and Grenaa branches).- Roads are still built as straight pieces. `build-network` now takes tangents, so the importer could build real curves with far fewer segments.
-- `import` has no area filter, so small streets cannot yet be put back one district at a time.
+- `tools/add_streets.py` puts a neighbourhood's small streets back (Åbyhøj: 382 segments within 1100 m). Each addition needs the arrival routes re-checked with `/state/route`; the far south of the owned area is already out of reach from the north-west entrance.
 
 ## Decisions
 
