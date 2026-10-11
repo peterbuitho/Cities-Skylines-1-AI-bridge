@@ -67,7 +67,7 @@ A landmark the Steam Workshop does not have (see `cities/aarhus.workshop.md`) ca
 py -X utf8 tools\landmarks\churches.py generate            # writes out/assets/<key>/model.obj and textures
 py -X utf8 tools\landmarks\churches.py create              # city loaded: packs each into a game asset; then restart the game
 py -X utf8 tools\landmarks\churches.py place               # puts each at its real position, with its name on a footpath in front
-py -X utf8 tools\landmarksuildings.py generate dokk1     # the same three steps for other buildings; keys are optional
+py -X utf8 tools\landmarks\buildings.py generate dokk1     # the same three steps for other buildings; keys are optional
 py -X utf8 tools\screenshot.py -1187 90 shot.png --size 150   # look at it; --ui shows street names
 ```
 
