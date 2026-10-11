@@ -352,6 +352,18 @@ namespace SkylinesAgentBridge
                 return RunOnGameThread(request, delegate { return AssetBuilder.CreateAsset(body); });
             }
 
+            if (request.Method == "POST" && request.Path == "/commands/create-style")
+            {
+                string body = request.Body;
+                return RunOnGameThread(request, delegate { return CityCommands.CreateStyle(body); });
+            }
+
+            if (request.Method == "POST" && request.Path == "/commands/apply-style")
+            {
+                string body = request.Body;
+                return RunOnSimulationThread(request, delegate { return CityCommands.ApplyStyle(body); });
+            }
+
             if (request.Method == "POST" && request.Path == "/commands/create-district")
             {
                 string body = request.Body;

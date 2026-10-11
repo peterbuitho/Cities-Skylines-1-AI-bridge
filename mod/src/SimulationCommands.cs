@@ -163,6 +163,13 @@ namespace SkylinesAgentBridge
                 ",\"heatingMapVisible\":" + JsonUtil.Bool(Singleton<WaterManager>.instance.HeatingMapVisible) +
                 ",\"electricityMapVisible\":" + JsonUtil.Bool(Singleton<ElectricityManager>.instance.ElectricityMapVisible) +
                 ",\"linesVisible\":" + Singleton<TransportManager>.instance.LinesVisible + "}";
+            // The pointer tool highlights whatever building is under the mouse in blue; rest it meanwhile.
+            ToolController tools = ToolsModifierControl.toolController;
+            if (tools != null && tools.CurrentTool != null)
+            {
+                tools.CurrentTool.enabled = visible;
+            }
+
             // A tracing image laid over the map by the Image Overlay mod goes away for the picture too.
             if (!visible)
             {
