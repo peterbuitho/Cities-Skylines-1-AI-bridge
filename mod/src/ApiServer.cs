@@ -321,7 +321,13 @@ namespace SkylinesAgentBridge
             if (request.Method == "POST" && request.Path == "/commands/unlock-area")
             {
                 string body = request.Body;
-                return RunOnSimulationThread(request, delegate { return TransitCommands.UnlockArea(body); });
+                return RunOnSimulationThread(request, delegate { return CityCommands.UnlockArea(body); });
+            }
+
+            if (request.Method == "POST" && request.Path == "/commands/create-district")
+            {
+                string body = request.Body;
+                return RunOnSimulationThread(request, delegate { return CityCommands.CreateDistrict(body); });
             }
 
             if (request.Method == "POST" && request.Path == "/commands/create-line")

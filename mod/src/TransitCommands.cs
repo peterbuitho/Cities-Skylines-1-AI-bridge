@@ -119,22 +119,6 @@ namespace SkylinesAgentBridge
             return fallback;
         }
 
-        // POST /commands/unlock-area {"x":-3400,"z":-600}: buys the map tile under a world position.
-        // Zoned land outside the owned tiles never develops. The tile must touch one already owned.
-        public static CommandResult UnlockArea(string body)
-        {
-            GameAreaManager areas = Singleton<GameAreaManager>.instance;
-            Vector3 position = new Vector3(JsonUtil.GetNumber(body, "x", 0f), 0f, JsonUtil.GetNumber(body, "z", 0f));
-            int tileX;
-            int tileZ;
-            areas.GetTileXZ(position, out tileX, out tileZ);
-            bool already = areas.IsUnlocked(tileX, tileZ);
-            bool unlocked = already || areas.UnlockArea(areas.GetTileIndex(tileX, tileZ));
-            return CommandResult.FromJson("{\"ok\":" + JsonUtil.Bool(unlocked) + ",\"tileX\":" + tileX + ",\"tileZ\":" + tileZ +
-                ",\"alreadyOwned\":" + JsonUtil.Bool(already) + ",\"ownedTiles\":" + areas.m_areaCount + ",\"maxTiles\":" + areas.MaxAreaCount +
-                (unlocked ? "" : ",\"error\":\"The game refused: the tile must touch an owned tile and the tile limit must not be reached.\"") + "}");
-        }
-
         // GET /state/lines
         public static CommandResult BuildLinesJson()
         {

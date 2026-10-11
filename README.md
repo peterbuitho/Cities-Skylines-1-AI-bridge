@@ -32,6 +32,19 @@ py tools\highway_links.py --live                          # join the map's highw
 py tools\thin_streets.py out\aarhus.plan.json 2500 --live  # small streets only within 2.5 km of the centre
 ```
 
+## Zones, names and utilities from real land use
+
+Zoned land only develops inside map tiles the city owns, near a powered building. Buy the tiles first (the mod's `POST /commands/unlock-area {"x":..,"z":..}`, one tile per call, each touching an owned one), then:
+
+```powershell
+curl.exe -A citybridge -o data\aarhus.landuse.osm.json --data-urlencode "data@cities\aarhus.landuse.overpassql" https://overpass-api.de/api/interpreter
+# bounds of the owned tiles, then the city centre (high density within 1500 m of it)
+py -X utf8 tools\zones.py data\aarhus.landuse.osm.json cities\aarhus.toml "-4800,-2880,960,2880" "-1187,58" --live
+py -X utf8 tools\utilities.py data\aarhus.landuse.osm.json cities\aarhus.toml "-4800,-2880,960,2880" "-1187,58" --live
+```
+
+`zones.py` zones each piece of land by the OpenStreetMap land use area it lies in, unzones everything else, and turns suburbs, quarters and neighbourhoods into named districts. `utilities.py` lays a water pipe grid under the zoned land and seeds wind turbines and water towers.
+
 ## Light rail as metro
 
 The game has no trams without the Snowfall expansion, so `tools/metro.py` builds a real light-rail route as a ground-level metro: a station at each named stop, track along the OpenStreetMap alignment, and one line out and back.
