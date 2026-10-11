@@ -33,6 +33,8 @@ namespace SkylinesAgentBridge
         // POST /commands/set-ui {"visible":false}: hides or shows the whole game interface, for
         // screenshots and video. Street names are drawn in the world and stay.
         private static bool overlayWasShown;
+        private static bool dayNightBefore;
+        private static bool dayNightSaved;
 
         // Reads, and with a value sets, the Image Overlay Renewal mod's "show image" setting.
         // Returns what it was, or null when that mod is not there.
@@ -163,6 +165,23 @@ namespace SkylinesAgentBridge
                 ",\"heatingMapVisible\":" + JsonUtil.Bool(Singleton<WaterManager>.instance.HeatingMapVisible) +
                 ",\"electricityMapVisible\":" + JsonUtil.Bool(Singleton<ElectricityManager>.instance.ElectricityMapVisible) +
                 ",\"linesVisible\":" + Singleton<TransportManager>.instance.LinesVisible + "}";
+            // Full daylight while the interface is hidden: a recording made at dusk comes out dark and hazy.
+            SimulationManager simulation = Singleton<SimulationManager>.instance;
+            if (!visible)
+            {
+                if (!dayNightSaved)
+                {
+                    dayNightBefore = simulation.m_enableDayNight;
+                    dayNightSaved = true;
+                }
+                simulation.m_enableDayNight = false;
+            }
+            else if (dayNightSaved)
+            {
+                simulation.m_enableDayNight = dayNightBefore;
+                dayNightSaved = false;
+            }
+
             // The pointer tool highlights whatever building is under the mouse in blue; rest it meanwhile.
             ToolController tools = ToolsModifierControl.toolController;
             if (tools != null && tools.CurrentTool != null)
