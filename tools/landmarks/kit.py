@@ -365,14 +365,16 @@ LABELS = {"Aabyhoj Kirke": "Åbyhøj Kirke", "Gammel Vindmolle": "Tuesbøl Møll
           "Aarhus Universitet Aulaen": "Aarhus Universitet", "Ceres Park": "Ceres Park Stadion"}
 
 
-def label(name, x, z, angle, width, depth, replace=False):
+def label(name, x, z, angle, width, depth, replace=False, capitals=True):
     """Shows a landmark's name the way street names are shown, in capitals: a short named footpath along its front.
     Does nothing when a path of that name is there already, unless replace is set (the building moved)."""
-    name = LABELS.get(name, name).upper()   # capitals set a landmark apart from the street names
+    name = LABELS.get(name, name)
+    if capitals:                             # capitals set a landmark apart from the street names
+        name = name.upper()
     for s in call("/state/networks?service=Beautification&limit=65536")["segments"]:
         if s["name"] == name and not replace:
             return True
-        if s["name"].upper() == name:        # an earlier sign: in small letters, or where the building stood
+        if s["name"].upper() == name.upper():   # an earlier sign: in small letters, or where the building stood
             call("/commands/bulldoze", {"entityType": "netSegment", "id": s["id"]})
     a = math.radians(angle)
     front, along = (-math.sin(a), math.cos(a)), (math.cos(a), math.sin(a))
