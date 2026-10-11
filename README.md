@@ -32,6 +32,16 @@ py tools\highway_links.py --live                          # join the map's highw
 py tools\thin_streets.py out\aarhus.plan.json 2500 --live  # small streets only within 2.5 km of the centre
 ```
 
+## Light rail as metro
+
+The game has no trams without the Snowfall expansion, so `tools/metro.py` builds a real light-rail route as a ground-level metro: a station at each named stop, track along the OpenStreetMap alignment, and one line out and back.
+
+```powershell
+# light-rail track and stops (same bounding box as the streets)
+curl.exe -A citybridge -o data\aarhus.lightrail.osm.json --data-urlencode "data@cities\aarhus.lightrail.overpassql" https://overpass-api.de/api/interpreter
+py -X utf8 tools\metro.py data\aarhus.lightrail.osm.json cities\aarhus.toml "Aarhus H;Dokk1;Skolebakken;Nørreport" --live
+```
+
 ## A new city
 
 Copy `cities/aarhus.toml` and `cities/aarhus.overpassql`. The `.toml` says which real-world point is at the centre of the game map, the scale and the rotation. For Aarhus these were found by matching the OpenStreetMap coastline to the game's shoreline.

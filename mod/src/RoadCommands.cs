@@ -70,7 +70,16 @@ namespace SkylinesAgentBridge
                 simulation.m_currentBuildIndex += 1u;
             }
 
+            // Optional tangents make a curved segment: startDirection is the way the road leaves the
+            // start, endDirection the way it arrives at the end. Rail needs this, because trains
+            // refuse a kink between two straight pieces.
             Vector3 direction = (end - start).normalized;
+            Vector3 startDirection = ReadPoint(body, "startDirection");
+            Vector3 endDirection = ReadPoint(body, "endDirection");
+            startDirection.y = 0f;
+            endDirection.y = 0f;
+            startDirection = startDirection.sqrMagnitude < 0.0001f ? direction : startDirection.normalized;
+            endDirection = endDirection.sqrMagnitude < 0.0001f ? direction : endDirection.normalized;
             ushort segment;
             bool created = net.CreateSegment(
                 out segment,
@@ -78,8 +87,8 @@ namespace SkylinesAgentBridge
                 info,
                 startNode,
                 endNode,
-                direction,
-                -direction,
+                startDirection,
+                -endDirection,
                 simulation.m_currentBuildIndex,
                 simulation.m_currentBuildIndex,
                 false);

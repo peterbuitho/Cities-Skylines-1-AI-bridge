@@ -104,7 +104,8 @@ Required: Skylines Agent Bridge. Recommended: TM:PE, Move It, Network Anarchy, N
 
 - How many small streets can come back before the path finder overflows again? 13,400 segments work; the edge has not been measured.
 - Do newcomers use the train station at the Aarhus H site? It is placed and joined to the line; arrivals by rail are not yet confirmed.
-- Letbanen as a metro stand-in (no tram pieces in this install): needs the light-rail route from OpenStreetMap and a mod command that creates a transport line with stops.
+- Letbanen runs as a metro stand-in (no tram pieces in this install): `tools/metro.py` built 12 stations from Aarhus H to Universitetshospitalet along the OpenStreetMap light-rail track and one line through them. Still to do: the stops further out (Lisbjerg, Lystrup, Odder and Grenaa branches). The line measures 38.9 km for a 6.5 km route out and back, so some legs probably run to the end of the track to turn round; not looked into.
+- Roads are still built as straight pieces. `build-network` now takes tangents, so the importer could build real curves with far fewer segments.
 - `import` has no area filter, so small streets cannot yet be put back one district at a time.
 
 ## Decisions

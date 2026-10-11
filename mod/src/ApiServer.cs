@@ -313,6 +313,17 @@ namespace SkylinesAgentBridge
                 return RunOnGameThread(request, delegate { return EconomyCommands.SetTaxRate(body); });
             }
 
+            if (request.Method == "POST" && request.Path == "/commands/create-line")
+            {
+                string body = request.Body;
+                return RunOnSimulationThread(request, delegate { return TransitCommands.CreateLine(body); });
+            }
+
+            if (request.Method == "GET" && request.Path == "/state/lines")
+            {
+                return RunOnGameThread(request, TransitCommands.BuildLinesJson);
+            }
+
             if (request.Method == "POST" && request.Path == "/commands/bulldoze")
             {
                 string body = request.Body;
