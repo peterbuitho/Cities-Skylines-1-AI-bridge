@@ -64,12 +64,27 @@ py -X utf8 tools\add_streets.py out\aarhus.plan.json "-3967,-85" 1100 --live   #
 A landmark the Steam Workshop does not have (see `cities/aarhus.workshop.md`) can be generated: a script writes a mesh and a facade texture from the building's real measures, and the mod packs them into a game asset.
 
 ```powershell
-py -X utf8 tools\landmarks\domkirken.py out\assets\aarhus_domkirke
-# with a city loaded: POST /commands/create-asset
-#   {"name":"Aarhus Domkirke","folder":"<repo>/out/assets/aarhus_domkirke","template":"Statue of Shopping","cellWidth":12,"cellLength":6}
-# restart the game, then place "Aarhus Domkirke.Aarhus Domkirke_Data" with /commands/place-building
-tools\screenshot.ps1 -X -1187 -Z 90 -Size 150 -Out shot.png   # look at it
+py -X utf8 tools\landmarks\churches.py generate            # writes out/assets/<key>/model.obj and textures
+py -X utf8 tools\landmarks\churches.py create              # city loaded: packs each into a game asset; then restart the game
+py -X utf8 tools\landmarks\churches.py place               # puts each at its real position, with its name on a footpath in front
+py -X utf8 tools\landmarksuildings.py generate dokk1     # the same three steps for other buildings; keys are optional
+py -X utf8 tools\screenshot.py -1187 90 shot.png --size 150   # look at it; --ui shows street names
 ```
+
+`label` instead of `place` adds only the name. The name is a short named footpath, so it shows the way street names do.
+
+## Services and houses
+
+```powershell
+py -X utf8 tools\civic.py dataarhus.civic.osm.json citiesarhus.toml "-4800,-2880,960,2880" --live   # schools, clinics, fire, police, libraries, cemeteries at real sites
+py -X utf8 tools\workshop_homes.py style    # once, then restart: a district style of the subscribed Workshop houses
+py -X utf8 tools\workshop_homes.py apply    # after every load: all districts grow from it
+py -X utf8 tools	urbines.py --live         # remove seeded wind turbines that now stand among buildings
+```
+
+Before `turbines.py --live`: the city must have power plants that cover its use (`GET /state/growth` shows capacity and use) and a power line from them to the built-up area, or the city goes dark. Save first, run the game for a minute afterwards and look at `/state/problems`.
+
+Growth is slow by default because the game raises demand in small steps. `POST /commands/set-simulation-speed {"paused":false,"speed":3,"fastDemand":true}` lets demand follow the game's own computed value at once.
 
 ## Light rail as metro
 
