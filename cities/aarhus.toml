@@ -1,0 +1,11 @@
+name = "Aarhus"
+
+# Fitted by matching the OSM coastline to the shoreline of the in-game map
+# made from Aarhus_heightmap.png. Mean coastline error about 40 m.
+center_lat = 56.156005
+center_lon = 10.229906
+scale = 0.991
+rotation_deg = 0.15
+
+half_extent = 8600.0
+max_segments = 30000
