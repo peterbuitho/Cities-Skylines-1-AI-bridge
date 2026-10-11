@@ -364,6 +364,23 @@ namespace SkylinesAgentBridge
                 return RunOnSimulationThread(request, delegate { return CityCommands.ApplyStyle(body); });
             }
 
+            if (request.Method == "POST" && request.Path == "/commands/name-segments")
+            {
+                string body = request.Body;
+                return RunOnSimulationThread(request, delegate { return CityCommands.NameSegments(body); });
+            }
+
+            if (request.Method == "GET" && request.Path == "/state/owned-tiles")
+            {
+                return RunOnSimulationThread(request, delegate { return CityCommands.OwnedTiles(); });
+            }
+
+            if (request.Method == "POST" && request.Path == "/commands/plant-trees")
+            {
+                string body = request.Body;
+                return RunOnSimulationThread(request, delegate { return CityCommands.PlantTrees(body); });
+            }
+
             if (request.Method == "POST" && request.Path == "/commands/refresh-water-grid")
             {
                 return RunOnSimulationThread(request, delegate { return CityCommands.RefreshWaterGrid(); });

@@ -177,6 +177,8 @@ namespace SkylinesAgentBridge
                     dayNightSaved = true;
                 }
                 simulation.m_enableDayNight = false;
+                // the game moves the clock to noon only in a simulation step; do it here so it also holds while paused
+                simulation.m_dayTimeOffsetFrames = ((SimulationManager.DAYTIME_FRAMES >> 1) - simulation.m_currentFrameIndex) & (SimulationManager.DAYTIME_FRAMES - 1);
             }
             else if (dayNightSaved)
             {

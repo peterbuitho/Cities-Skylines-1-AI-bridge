@@ -12,6 +12,7 @@ Data files come from OpenStreetMap (queries in `cities/*.overpassql`) and from t
 | `highway_links.py` | Joins the map's raised highways to the nearest streets, so that traffic and newcomers can enter. |
 | `thin_streets.py` | Removes small streets beyond a radius. The game's path finder gives out on too many road pieces. |
 | `add_streets.py` | Puts one neighbourhood's planned streets back, or the streets inside business areas. |
+| `street_names.py` | Replaces the game's invented street names with the name of the real street each piece joins. |
 
 ## Land, services and utilities
 
@@ -22,6 +23,7 @@ Data files come from OpenStreetMap (queries in `cities/*.overpassql`) and from t
 | `repipe.py` | Rebuilds all water pipes so every tower and treatment plant counts (the game has a limit of 1,024). |
 | `infrastructure.py` | Places real power plants, water works, wastewater plants and waste sites. |
 | `civic.py` | Places real schools, clinics, fire and police stations, libraries and cemeteries, with their names. |
+| `greenery.py` | Plants the real forests and parks from OpenStreetMap, with park name signs. |
 | `turbines.py` | Removes seeded wind turbines once the land round them is built up. |
 | `metro.py` | Builds the light rail as a metro line with stations at the real stops. |
 | `workshop_homes.py` | Makes subscribed Workshop houses the ones that grow, as a district style. |
@@ -42,3 +44,4 @@ Data files come from OpenStreetMap (queries in `cities/*.overpassql`) and from t
 | `screenshot.py` | Saves a picture of a spot from a chosen direction and height, without bringing the game to the front. |
 | `flyby.py` | Records a smooth fly-by video along a route of camera keys (`cities/*.flyby.json`). |
 | `jitter.py` | Measures frame-to-frame shake in a recorded video. |
+| `follow.py` | Keeps the game camera on where new buildings appear. |

@@ -97,6 +97,105 @@ namespace SkylinesAgentBridge
             return CommandResult.FromJson("{\"ok\":true,\"district\":" + district + ",\"name\":\"" + JsonUtil.Escape(name) + "\"}");
         }
 
+        // POST /commands/name-segments {"name":"Åhavevej","ids":"12;87;903"}: gives road pieces a name.
+        public static CommandResult NameSegments(string body)
+        {
+            string name = JsonUtil.GetString(body, "name", "");
+            NetManager net = Singleton<NetManager>.instance;
+            int named = 0;
+            foreach (string part in JsonUtil.GetString(body, "ids", "").Split(';'))
+            {
+                ushort id;
+                if (name.Length > 0 && ushort.TryParse(part, out id) && id != 0 && (net.m_segments.m_buffer[id].m_flags & NetSegment.Flags.Created) != 0)
+                {
+                    net.SetSegmentNameImpl(id, name);
+                    named++;
+                }
+            }
+            return CommandResult.FromJson("{\"ok\":true,\"named\":" + named + "}");
+        }
+
+        // GET /state/owned-tiles: the map tiles the city owns, as world bounds. /state/areas assumes the
+        // 5x5 grid and is wrong with 81 Tiles; this asks the game tile by tile.
+        public static CommandResult OwnedTiles()
+        {
+            GameAreaManager areas = Singleton<GameAreaManager>.instance;
+            int side = areas.MaxAreaCount > 25 ? 9 : 5;
+            float half = side * 960f;
+            StringBuilder json = new StringBuilder("{\"ok\":true,\"tiles\":[");
+            bool first = true;
+            for (int z = 0; z < side; z++)
+            {
+                for (int x = 0; x < side; x++)
+                {
+                    if (!areas.IsUnlocked(x, z))
+                    {
+                        continue;
+                    }
+                    json.Append(first ? "" : ",").Append("{\"x\":").Append(x).Append(",\"z\":").Append(z)
+                        .Append(",\"minX\":").Append(x * 1920 - half).Append(",\"minZ\":").Append(z * 1920 - half)
+                        .Append(",\"maxX\":").Append((x + 1) * 1920 - half).Append(",\"maxZ\":").Append((z + 1) * 1920 - half).Append("}");
+                    first = false;
+                }
+            }
+            return CommandResult.FromJson(json.Append("]}").ToString());
+        }
+
+        // POST /commands/plant-trees {"prefab":"Beech","points":"x1,z1;x2,z2;..."}: one tree at each point,
+        // on the ground. Without points it lists the tree kinds that are loaded.
+        public static CommandResult PlantTrees(string body)
+        {
+            string wanted = JsonUtil.GetString(body, "prefab", "");
+            string points = JsonUtil.GetString(body, "points", "");
+            TreeInfo info = null;
+            StringBuilder names = new StringBuilder();
+            int loaded = PrefabCollection<TreeInfo>.LoadedCount();
+            for (uint i = 0; i < loaded; i++)
+            {
+                TreeInfo candidate = PrefabCollection<TreeInfo>.GetLoaded(i);
+                if (candidate == null)
+                {
+                    continue;
+                }
+                names.Append(names.Length == 0 ? "" : ";").Append(candidate.name);
+                if (candidate.name == wanted)
+                {
+                    info = candidate;
+                }
+            }
+            if (points.Length == 0)
+            {
+                return CommandResult.FromJson("{\"ok\":true,\"trees\":" + Singleton<TreeManager>.instance.m_treeCount +
+                    ",\"prefabs\":\"" + JsonUtil.Escape(names.ToString()) + "\"}");
+            }
+            if (info == null)
+            {
+                return CommandResult.Fail("Tree kind was not found: " + wanted);
+            }
+
+            TreeManager trees = Singleton<TreeManager>.instance;
+            TerrainManager terrain = Singleton<TerrainManager>.instance;
+            int planted = 0;
+            foreach (string point in points.Split(';'))
+            {
+                string[] xz = point.Split(',');
+                float x, z;
+                if (xz.Length != 2 || !float.TryParse(xz[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out x) ||
+                    !float.TryParse(xz[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out z))
+                {
+                    continue;
+                }
+                Vector3 position = new Vector3(x, 0f, z);
+                position.y = terrain.SampleRawHeightSmooth(position);
+                uint tree;
+                if (trees.CreateTree(out tree, ref Singleton<SimulationManager>.instance.m_randomizer, info, position, false))
+                {
+                    planted++;
+                }
+            }
+            return CommandResult.FromJson("{\"ok\":true,\"planted\":" + planted + ",\"trees\":" + trees.m_treeCount + "}");
+        }
+
         // POST /commands/refresh-water-grid: recomputes which ground every water pipe serves, for the
         // whole map. The game redoes this only round a pipe that changes, and then finds other pipes
         // by their middle point, so a long pipe loses ground wherever another pipe is built or removed
