@@ -132,6 +132,11 @@ namespace SkylinesAgentBridge
                 return RunOnSimulationThread(request, delegate { return Diagnostics.BuildRouteJson(fx != int.MinValue, fx, fz, tx, tz, drive, max, label); });
             }
 
+            if (request.Method == "GET" && request.Path == "/state/growth")
+            {
+                return RunOnSimulationThread(request, Diagnostics.BuildGrowthJson);
+            }
+
             if (request.Method == "GET" && request.Path == "/state/move-in")
             {
                 return RunOnSimulationThread(request, Diagnostics.BuildMoveInJson);
@@ -311,6 +316,12 @@ namespace SkylinesAgentBridge
             {
                 string body = request.Body;
                 return RunOnGameThread(request, delegate { return EconomyCommands.SetTaxRate(body); });
+            }
+
+            if (request.Method == "POST" && request.Path == "/commands/unlock-area")
+            {
+                string body = request.Body;
+                return RunOnSimulationThread(request, delegate { return TransitCommands.UnlockArea(body); });
             }
 
             if (request.Method == "POST" && request.Path == "/commands/create-line")

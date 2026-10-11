@@ -179,6 +179,69 @@ namespace SkylinesAgentBridge
             json.Append("]");
         }
 
+        // GET /state/growth: why does zoned land not develop? The demand the game really uses, whether it
+        // has found a good place per zone, and how many zoned rows are free to build on.
+        public static CommandResult BuildGrowthJson()
+        {
+            ZoneManager zones = Singleton<ZoneManager>.instance;
+            StringBuilder json = new StringBuilder();
+            json.Append("{\"ok\":true,\"actualDemand\":{\"residential\":").Append(zones.m_actualResidentialDemand);
+            json.Append(",\"commercial\":").Append(zones.m_actualCommercialDemand);
+            json.Append(",\"workplace\":").Append(zones.m_actualWorkplaceDemand).Append("}");
+
+            System.Reflection.FieldInfo field = typeof(ZoneManager).GetField("m_goodAreaFound",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            short[] good = field == null ? null : field.GetValue(zones) as short[];
+
+            int[] freeRows = new int[16];
+            int[] blocks = new int[16];
+            int created = 0;
+            for (int i = 1; i < zones.m_blocks.m_buffer.Length; i++)
+            {
+                ZoneBlock block = zones.m_blocks.m_buffer[i];
+                if ((block.m_flags & 1u) == 0)
+                {
+                    continue;
+                }
+                created++;
+                ulong free = block.m_valid & ~(block.m_occupied1 | block.m_occupied2);
+                bool counted = false;
+                for (int row = 0; row < block.RowCount; row++)
+                {
+                    int zone = (int)block.GetZone(0, row);
+                    if (zone <= 0 || zone >= 16)
+                    {
+                        continue;
+                    }
+                    if (!counted)
+                    {
+                        blocks[zone]++;
+                        counted = true;
+                    }
+                    if ((free & (1UL << (row << 3))) != 0)
+                    {
+                        freeRows[zone]++;
+                    }
+                }
+            }
+
+            json.Append(",\"zoneBlocks\":").Append(created).Append(",\"zones\":[");
+            bool first = true;
+            for (int zone = 1; zone < 16; zone++)
+            {
+                if (blocks[zone] == 0)
+                {
+                    continue;
+                }
+                json.Append(first ? "" : ",").Append("{\"zone\":\"").Append((ItemClass.Zone)zone).Append("\"");
+                first = false;
+                json.Append(",\"blocks\":").Append(blocks[zone]).Append(",\"freeRows\":").Append(freeRows[zone]);
+                json.Append(",\"goodAreaFound\":").Append(good != null && zone < good.Length ? good[zone].ToString() : "null").Append("}");
+            }
+            json.Append("]}");
+            return CommandResult.FromJson(json.ToString());
+        }
+
         private static void AppendPosition(StringBuilder json, Vector3 p)
         {
             json.Append("\"x\":").Append(JsonUtil.Number(p.x)).Append(",\"z\":").Append(JsonUtil.Number(p.z));
