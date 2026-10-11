@@ -2,6 +2,15 @@
 
 Puts real street networks into Cities: Skylines 1. It reads OpenStreetMap data, turns it into a build plan, and builds the plan in a running game through the Skylines Agent Bridge mod. Use the build of the mod in `mod/` (see `mod/README.md`): it is thread-safe and lists whole cities, which the stock mod does not. See `PLAN.md` for the design and what is still to come.
 
+![Aarhus from the south](docs/screenshots/01-overview-from-south.jpg)
+
+Aarhus at 100,000 residents, built from OpenStreetMap and the Danish municipal plan. More pictures in `docs/screenshots/`: the harbour front, Aarhus Ø, Domkirken, Rådhuset and Aarhus H, Den Gamle By, Tivoli Friheden, the university, Marselisborg, Åbyhøj.
+
+| | |
+|---|---|
+| ![City centre](docs/screenshots/02-city-centre.jpg) | ![Harbour front](docs/screenshots/03-harbour-front.jpg) |
+| ![Domkirken](docs/screenshots/05-domkirken.jpg) | ![Rådhuset and Aarhus H](docs/screenshots/06-raadhuset-aarhus-h.jpg) |
+
 ## Use
 
 The game must be running with a city loaded, on a map made from the city's heightmap.
