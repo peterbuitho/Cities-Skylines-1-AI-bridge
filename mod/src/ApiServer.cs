@@ -132,6 +132,11 @@ namespace SkylinesAgentBridge
                 return RunOnSimulationThread(request, delegate { return Diagnostics.BuildRouteJson(fx != int.MinValue, fx, fz, tx, tz, drive, max, label); });
             }
 
+            if (request.Method == "GET" && request.Path == "/state/frame")
+            {
+                return RunOnGameThread(request, SimulationCommands.Frame);
+            }
+
             if (request.Method == "GET" && request.Path == "/state/growth")
             {
                 return RunOnSimulationThread(request, Diagnostics.BuildGrowthJson);

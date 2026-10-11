@@ -13,12 +13,7 @@ Placing: the mod turns a building so that its front, model +z, faces (-sin a, co
 points along (cos a, sin a). `tower_towards` is the compass direction the tower end, model -x,
 points in, as an angle from east through north.
 """
-import json, math, os, sys, urllib.error, urllib.request
-
 import kit
-
-B = "http://127.0.0.1:32123"
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def domkirken():
@@ -74,53 +69,7 @@ CHURCHES = {
 }
 
 
-def call(path, body=None):
-    data = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(B + path, data=data, headers={"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=180) as r:
-            return json.loads(r.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        return json.loads(e.read().decode("utf-8"))
-
-
-def cells(mesh):
-    low, high = mesh.extent()
-    width = math.ceil(max(abs(low[0]), abs(high[0])) * 2 / 8)
-    length = math.ceil(max(abs(low[2]), abs(high[2])) * 2 / 8)
-    return max(1, width), max(1, length)
-
-
-def main():
-    step = sys.argv[1] if len(sys.argv) > 1 else "generate"
-    wanted = sys.argv[2:] or list(CHURCHES)
-    for key in wanted:
-        name, build, description, x, z, tower_towards = CHURCHES[key]
-        folder = os.path.join(ROOT, "out", "assets", key).replace("\\", "/")
-        mesh, image = build()
-        width, length = cells(mesh)
-        prefab = f"{name}.{name}_Data"
-        if step == "generate":
-            kit.save(folder, mesh, image, "tools/landmarks/churches.py")
-            low, high = mesh.extent()
-            print(f"{name}: {len(mesh.faces)} faces, {high[0] - low[0]:.0f} x {high[2] - low[2]:.0f} m, {high[1]:.0f} m high, lot {width} x {length} cells")
-        elif step == "create":
-            r = call("/commands/create-asset", {"name": name, "folder": folder, "template": "Statue of Shopping",
-                                                "cellWidth": width, "cellLength": length, "description": description})
-            print(f"{name}:", r.get("file") or r.get("error"))
-        elif step == "place":
-            angle = (tower_towards + 180) % 360
-            for f in call("/state/facilities?limit=65536&service=Monument")["facilities"]:
-                if f["prefab"] == prefab:
-                    call("/commands/bulldoze", {"entityType": "building", "id": f["id"]})
-            for g in call("/state/growables?limit=65536")["growables"]:
-                if math.hypot(g["position"]["x"] - x, g["position"]["z"] - z) < max(width, length) * 4 + 6:
-                    call("/commands/bulldoze", {"entityType": "building", "id": g["id"]})
-            r = call("/commands/place-building", {"dryRun": False, "buildingPrefab": prefab, "position": {"x": x, "z": z}, "angleDegrees": angle})
-            print(f"{name} at {x},{z} turned {angle}:", r.get("ok"), r.get("error", ""))
-        else:
-            sys.exit("step must be generate, create or place")
-
-
 if __name__ == "__main__":
-    main()
+    # the tower end, model -x, points at tower_towards, so the building is turned half a circle from it
+    kit.run({key: (name, build, text, x, z, towards + 180) for key, (name, build, text, x, z, towards) in CHURCHES.items()},
+            "tools/landmarks/churches.py")

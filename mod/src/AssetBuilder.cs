@@ -69,6 +69,12 @@ namespace SkylinesAgentBridge
             lod.AddComponent<MeshRenderer>().sharedMaterial = Skin(lodTemplate, LoadTexture(lodPath), name + "_lod");
             info.m_lodObject = lod;
 
+            // The template's colour variations would tint the whole facade (one copy in four came out blue).
+            info.m_useColorVariations = false;
+            info.m_color0 = Color.white;
+            info.m_color1 = Color.white;
+            info.m_color2 = Color.white;
+            info.m_color3 = Color.white;
             info.m_cellWidth = cellWidth;
             info.m_cellLength = cellLength;
             info.m_props = new BuildingInfo.Prop[0];

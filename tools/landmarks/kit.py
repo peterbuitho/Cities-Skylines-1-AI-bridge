@@ -3,7 +3,7 @@
 Model space is the game's: x along the lot, y up, z towards the street. Metres.
 The texture is cut into bands that each run the full width, so a band can repeat along a wall.
 """
-import math, os
+import json, math, os, sys, urllib.error, urllib.request
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -66,6 +66,15 @@ class Mesh:
             self.wall(a, b, 0, top, TOWER, TOWER_FACE * 2, (cx, top / 2, cz))
         for a, b in zip(corners, corners[1:] + corners[:1]):
             self.poly([(a[0], top, a[1]), (b[0], top, b[1]), (cx, apex, cz)], [(0, SPIRE[0]), (1.75, SPIRE[0]), (0.875, SPIRE[1])], (cx, top + 1, cz))
+
+    def block(self, x0, x1, z0, z1, height, bay=BAY):
+        """A flat-roofed block: four walls in the wall band and a roof in the plain band."""
+        inside = ((x0 + x1) / 2, height / 2, (z0 + z1) / 2)
+        corners = [(x0, z0), (x1, z0), (x1, z1), (x0, z1)]
+        for a, b in zip(corners, corners[1:] + corners[:1]):
+            self.wall(a, b, 0, height, WALL, bay * 4, inside)
+        self.poly([(x0, height, z0), (x1, height, z0), (x1, height, z1), (x0, height, z1)],
+                  [(0, ROOF[0]), ((x1 - x0) / 16, ROOF[0]), ((x1 - x0) / 16, ROOF[1]), (0, ROOF[1])], inside)
 
     def write(self, path, source):
         with open(path, "w", encoding="ascii") as f:
@@ -173,6 +182,89 @@ def texture(seed, brick_colour=(152, 78, 58), roof=COPPER, spire=COPPER, pointed
     top, bottom = rows(PLAIN)
     brick(d, (0, top, SIZE, bottom), rng, brick_colour)
     return img
+
+
+def block_texture(seed, wall=(196, 190, 178), glass=(52, 66, 84), floors=5, roof=(92, 94, 98), shopfront=True, columns=False):
+    """The facade of a flat-roofed block: rows of windows, optionally a glazed ground floor or a colonnade."""
+    rng = np.random.default_rng(seed)
+    img = Image.new("RGB", (SIZE, SIZE))
+    d = ImageDraw.Draw(img)
+    top, bottom = rows(WALL)
+    d.rectangle([0, top, SIZE, bottom], fill=wall)
+    for _ in range(1400):                                   # a little grain, so walls are not flat colour
+        x, y = int(rng.integers(0, SIZE)), int(rng.integers(top, bottom))
+        shade = int(rng.integers(-8, 9))
+        d.point((x, y), fill=tuple(int(np.clip(c + shade, 0, 255)) for c in wall))
+    floor_h = (bottom - top) / floors
+    bay = SIZE // 4
+    for f in range(floors):
+        y0 = top + int(f * floor_h)
+        ground = f == floors - 1
+        for i in range(4):
+            for k in range(3):                              # three windows a bay
+                x0 = i * bay + 14 + k * (bay - 20) // 3
+                x1 = x0 + (bay - 20) // 3 - 10
+                if columns:
+                    d.rectangle([x0, y0 + 4, x1, y0 + int(floor_h) - 2], fill=glass)
+                elif ground and shopfront:
+                    d.rectangle([x0 - 4, y0 + 6, x1 + 4, bottom - 6], fill=tuple(int(c * 0.8) for c in glass), outline=(40, 40, 44))
+                else:
+                    d.rectangle([x0, y0 + int(floor_h * 0.22), x1, y0 + int(floor_h * 0.78)], fill=glass, outline=tuple(int(c * 0.82) for c in wall))
+        d.line([(0, y0), (SIZE, y0)], fill=tuple(int(c * 0.86) for c in wall), width=2)   # floor line
+    if columns:
+        for x in range(0, SIZE, bay // 3):
+            d.rectangle([x, top, x + 12, bottom], fill=(238, 236, 230))                    # white columns in front of the glass
+    d.rectangle([0, top, SIZE, top + 10], fill=tuple(min(255, int(c * 1.08)) for c in wall))  # parapet
+    for band in (TOWER, ROOF, SPIRE, PLAIN):
+        t, b = rows(band)
+        d.rectangle([0, t, SIZE, b], fill=roof if band in (ROOF, PLAIN) else wall)
+    return img
+
+
+def call(path, body=None):
+    data = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request("http://127.0.0.1:32123" + path, data=data, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        return json.loads(e.read().decode("utf-8"))
+
+
+def run(registry, source):
+    """generate | create | place, for every key or the keys named on the command line.
+
+    registry: key -> (asset name, builder, description, x, z, angle). The mod turns a building so
+    that its front, model +z, faces (-sin angle, cos angle); model +x points along (cos, sin).
+    """
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    step = sys.argv[1] if len(sys.argv) > 1 else "generate"
+    for key in sys.argv[2:] or list(registry):
+        name, build, description, x, z, angle = registry[key]
+        folder = os.path.join(root, "out", "assets", key).replace("\\", "/")
+        mesh, image = build()
+        low, high = mesh.extent()
+        width = max(1, math.ceil(max(abs(low[0]), abs(high[0])) * 2 / 8))
+        length = max(1, math.ceil(max(abs(low[2]), abs(high[2])) * 2 / 8))
+        prefab = f"{name}.{name}_Data"
+        if step == "generate":
+            save(folder, mesh, image, source)
+            print(f"{name}: {len(mesh.faces)} faces, {high[0] - low[0]:.0f} x {high[2] - low[2]:.0f} m, {high[1]:.0f} m high, lot {width} x {length} cells")
+        elif step == "create":
+            r = call("/commands/create-asset", {"name": name, "folder": folder, "template": "Statue of Shopping",
+                                                "cellWidth": width, "cellLength": length, "description": description})
+            print(f"{name}:", r.get("file") or r.get("error"))
+        elif step == "place":
+            for f in call("/state/facilities?limit=65536&service=Monument")["facilities"]:
+                if f["prefab"] == prefab:
+                    call("/commands/bulldoze", {"entityType": "building", "id": f["id"]})
+            for g in call("/state/growables?limit=65536")["growables"]:
+                if math.hypot(g["position"]["x"] - x, g["position"]["z"] - z) < max(width, length) * 4 + 6:
+                    call("/commands/bulldoze", {"entityType": "building", "id": g["id"]})
+            r = call("/commands/place-building", {"dryRun": False, "buildingPrefab": prefab, "position": {"x": x, "z": z}, "angleDegrees": angle % 360})
+            print(f"{name} at {x},{z} turned {angle % 360}:", r.get("ok"), r.get("error", ""))
+        else:
+            sys.exit("step must be generate, create or place")
 
 
 def save(out, mesh, image, source):
