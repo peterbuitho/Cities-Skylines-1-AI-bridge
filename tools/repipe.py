@@ -112,8 +112,10 @@ def main():
         if n not in nodes:
             n = min(nodes, key=lambda m: math.dist(world(m), (x, z)))
         chain(world(n), (x, z))
-        if prefab != "Water Tower":     # a plant joins a pipe that runs across it, not one that ends at its middle
+        if prefab != "Water Tower":     # a plant joins a pipe that runs across it, and that pipe needs its own way to the lattice
             pipe((x - 60, z), (x + 30, z))
+            for end in ((x - 60, z), (x + 30, z)):
+                chain(end, world(min(nodes, key=lambda m: math.dist(world(m), end))))
         stood += bool(call("/commands/place-building", {"dryRun": False, "buildingPrefab": prefab, "position": {"x": x, "z": z}, "angleDegrees": angle}).get("ok"))
     print(f"sources placed: {stood} of {len(sources)}")
     built = sum(pipe(world(a), world(b)) for a, b in pieces) + sum(chain(world(a), world(b)) for a, b in far)

@@ -114,12 +114,39 @@ namespace SkylinesAgentBridge
             string name = JsonUtil.GetString(body, "name", "");
             float radius = Mathf.Clamp(JsonUtil.GetNumber(body, "radius", 200f), 32f, 2000f);
             Vector3 position = new Vector3(JsonUtil.GetNumber(body, "x", 0f), 0f, JsonUtil.GetNumber(body, "z", 0f));
+            DistrictManager districts = Singleton<DistrictManager>.instance;
+
+            // {"id":n} tells that park area's name; {"id":n,"release":true} removes the area;
+            // {"id":n,"name":".."} renames it. Without id the area is found by position.
+            int id = (int)JsonUtil.GetNumber(body, "id", 0f);
+            if (id > 0 && id < districts.m_parks.m_buffer.Length)
+            {
+                if ((districts.m_parks.m_buffer[id].m_flags & DistrictPark.Flags.Created) == 0)
+                {
+                    return CommandResult.FromJson("{\"ok\":true,\"park\":" + id + ",\"exists\":false}");
+                }
+                if (JsonUtil.GetBool(body, "release", false))
+                {
+                    districts.ReleasePark((byte)id);
+                    return CommandResult.FromJson("{\"ok\":true,\"park\":" + id + ",\"released\":true}");
+                }
+                if (name.Length == 0)
+                {
+                    Vector3 at = districts.m_parks.m_buffer[id].m_nameLocation;
+                    return CommandResult.FromJson("{\"ok\":true,\"park\":" + id + ",\"exists\":true,\"name\":\"" + JsonUtil.Escape(districts.GetParkName(id)) +
+                        "\",\"x\":" + Mathf.RoundToInt(at.x) + ",\"z\":" + Mathf.RoundToInt(at.z) + "}");
+                }
+                IEnumerator<bool> renameById = districts.SetParkName(id, name);
+                while (renameById.MoveNext())
+                {
+                }
+                return CommandResult.FromJson("{\"ok\":true,\"park\":" + id + ",\"name\":\"" + JsonUtil.Escape(name) + "\"}");
+            }
             if (name.Length == 0)
             {
                 return CommandResult.Fail("name is required.");
             }
 
-            DistrictManager districts = Singleton<DistrictManager>.instance;
             byte park = districts.GetPark(position);
             bool created = park == 0;
             if (created)
