@@ -67,8 +67,10 @@ class Mesh:
         for a, b in zip(corners, corners[1:] + corners[:1]):
             self.poly([(a[0], top, a[1]), (b[0], top, b[1]), (cx, apex, cz)], [(0, SPIRE[0]), (1.75, SPIRE[0]), (0.875, SPIRE[1])], (cx, top + 1, cz))
 
-    def block(self, x0, x1, z0, z1, height, bay=BAY, sign_every=None):
+    def block(self, x0, x1, z0, z1, height, bay=BAY, sign_every=None, base=0.0, band=WALL):
         """A flat-roofed block: four walls in the wall band and a roof in the plain band.
+
+        base lifts it off the ground (an upper part that hangs over); band picks another wall look.
 
         With sign_every, each wall shows the wall band a whole number of times, about once every
         that many metres, so a shop sign is never cut off at a corner.
@@ -77,9 +79,45 @@ class Mesh:
         corners = [(x0, z0), (x1, z0), (x1, z1), (x0, z1)]
         for a, b in zip(corners, corners[1:] + corners[:1]):
             per_u = math.dist(a, b) / max(1, round(math.dist(a, b) / sign_every)) if sign_every else bay * 4
-            self.wall(a, b, 0, height, WALL, per_u, inside)
+            self.wall(a, b, base, height, band, per_u, inside)
+        if base > 0:    # the underside of a part that hangs over
+            self.poly([(x0, base, z0), (x1, base, z0), (x1, base, z1), (x0, base, z1)],
+                      [(0, PLAIN[0]), (1, PLAIN[0]), (1, PLAIN[1]), (0, PLAIN[1])], ((x0 + x1) / 2, (base + height) / 2, (z0 + z1) / 2))
         self.poly([(x0, height, z0), (x1, height, z0), (x1, height, z1), (x0, height, z1)],
                   [(0, ROOF[0]), ((x1 - x0) / 16, ROOF[0]), ((x1 - x0) / 16, ROOF[1]), (0, ROOF[1])], inside)
+
+    def frustum(self, cx, cz, half_base, half_top, y0, y1, band=TOWER, sides=8):
+        """A tapering round tower, as a many-sided body: a mill, a chimney."""
+        ring = lambda r, y: [(cx + r * math.cos(2 * math.pi * k / sides), y, cz + r * math.sin(2 * math.pi * k / sides)) for k in range(sides)]
+        low, high = ring(half_base, y0), ring(half_top, y1)
+        for k in range(sides):
+            j = (k + 1) % sides
+            self.poly([low[k], low[j], high[j], high[k]], [(k / sides, band[0]), ((k + 1) / sides, band[0]), ((k + 1) / sides, band[1]), (k / sides, band[1])],
+                      (cx, (y0 + y1) / 2, cz))
+        self.poly(high, [(0.5 + 0.4 * math.cos(2 * math.pi * k / sides), ROOF[0] + (ROOF[1] - ROOF[0]) * (0.5 + 0.4 * math.sin(2 * math.pi * k / sides))) for k in range(sides)],
+                  (cx, y0, cz))
+
+    def dome(self, cx, cz, rx, rz, height, band=WALL, rings=5, sides=16):
+        """Half an egg standing on the ground: a glasshouse dome."""
+        point = lambda i, k: (cx + rx * math.cos(math.pi / 2 * i / rings) * math.cos(2 * math.pi * k / sides),
+                              height * math.sin(math.pi / 2 * i / rings),
+                              cz + rz * math.cos(math.pi / 2 * i / rings) * math.sin(2 * math.pi * k / sides))
+        v = lambda i: band[0] + (band[1] - band[0]) * i / rings
+        for i in range(rings):
+            for k in range(sides):
+                corners = [point(i, k), point(i, k + 1), point(i + 1, k + 1), point(i + 1, k)]
+                uvs = [(k * 4 / sides, v(i)), ((k + 1) * 4 / sides, v(i)), ((k + 1) * 4 / sides, v(i + 1)), (k * 4 / sides, v(i + 1))]
+                if i == rings - 1:   # the top ring closes to a point
+                    corners, uvs = corners[:3], uvs[:3]
+                self.poly(corners, uvs, (cx, 0, cz))
+
+    def sheet(self, points, uvs):
+        """A thin flat part seen from both sides: a mill sail, a sign."""
+        centre = sum(np.array(p, dtype=float) for p in points) / len(points)
+        normal = np.cross(np.array(points[1], dtype=float) - points[0], np.array(points[2], dtype=float) - points[0])
+        normal = normal / (np.linalg.norm(normal) or 1.0)
+        self.poly(points, uvs, centre - normal)
+        self.poly(points, uvs, centre + normal)
 
     def write(self, path, source):
         with open(path, "w", encoding="ascii") as f:
@@ -250,6 +288,36 @@ def shop_texture(name, wall, sign, text, glass=(60, 76, 92), roof=(96, 98, 102))
     for b in (TOWER, ROOF, SPIRE, PLAIN):
         t, bb = rows(b)
         d.rectangle([0, t, SIZE, bb], fill=roof)
+    return img
+
+
+def timber_texture(seed, roof=TILE):
+    """Half-timbered walls: plastered panels in white, ochre and red between dark posts and rails."""
+    rng = np.random.default_rng(seed)
+    img = Image.new("RGB", (SIZE, SIZE))
+    d = ImageDraw.Draw(img)
+    plaster = [(238, 232, 214), (214, 170, 96), (172, 78, 60), (232, 214, 170)]
+    timber = (58, 44, 34)
+    for band in (WALL, TOWER, PLAIN):
+        top, bottom = rows(band)
+        for x in range(0, SIZE, 128):                                  # one house front every 128 px
+            d.rectangle([x, top, x + 128, bottom], fill=plaster[int(rng.integers(0, len(plaster)))])
+        for x in range(0, SIZE, 32):
+            d.rectangle([x, top, x + 5, bottom], fill=timber)          # posts
+        rails = 4 if band != PLAIN else 1
+        for k in range(rails + 1):
+            y = top + (bottom - top) * k // rails
+            d.rectangle([0, y - 3, SIZE, y + 3], fill=timber)          # rails
+        if band != PLAIN:
+            step = (bottom - top) // rails
+            for x in range(48, SIZE, 64):
+                for k in range(rails - 1):
+                    y = top + k * step + step // 4
+                    d.rectangle([x - 11, y, x + 11, y + step // 2], fill=(44, 52, 62), outline=(240, 236, 226), width=2)   # small windows
+            for x in range(16, SIZE, 128):
+                d.rectangle([x - 2, bottom - step + 8, x + 18, bottom - 3], fill=(70, 96, 70))                               # doors
+    roofing(d, ROOF, roof)
+    roofing(d, SPIRE, roof)
     return img
 
 
