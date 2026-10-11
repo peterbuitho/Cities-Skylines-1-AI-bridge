@@ -12,9 +12,11 @@ route.json is a list of keys: {"t": seconds, "x":.., "z":.., "size": distance fr
 What keeps the result smooth:
 - the path is a spline through the keys, so the camera never stops and starts at a key;
 - the height of the spot looked at is smoothed, so the camera does not bob over bumps in the ground;
+- the exact camera pose is applied just before each frame is drawn, over the game's own camera logic;
 - each frame is grabbed only after the game has drawn the new view.
+tools/jitter.py measures the result.
 """
-import ctypes, ctypes.wintypes, json, os, shutil, subprocess, sys, tempfile, urllib.request
+import ctypes, ctypes.wintypes, json, math, os, shutil, subprocess, sys, tempfile, urllib.request
 
 from PIL import Image
 
@@ -103,18 +105,36 @@ def main():
     half = int(fps * 0.75)
     heights = [sum(ground[max(0, i - half):i + half + 1]) / len(ground[max(0, i - half):i + half + 1]) for i in range(count)]
 
+    # How far the game puts the camera from the spot for a given "size": measured once, then used
+    # to put the exact pose on the camera just before each frame is drawn. The game's own camera
+    # logic smooths and clamps each frame, which made the picture bob by a few pixels every frame.
+    first = camera(views[0])
+    for _ in range(4):
+        get("/state/frame")
+    eye = get("/state/camera")["eye"]
+    reach = math.dist((eye["x"], eye["y"], eye["z"]), (views[0]["x"], first["y"], views[0]["z"])) / views[0]["size"]
+
     frames = tempfile.mkdtemp(prefix="flyby_")
     post("/commands/set-ui", {"visible": False})
     try:
         for i in range(count):
-            drawn = camera(views[i], heights[i])["frame"]
-            while get("/state/frame")["frame"] <= drawn:   # the view is on screen one frame later
+            v = views[i]
+            b, t = math.radians(v["bearing"]), math.radians(v["tilt"])
+            forward = (math.sin(b) * math.cos(t), -math.sin(t), math.cos(b) * math.cos(t))
+            d = reach * v["size"]
+            # the usual view for the game's own camera logic, and the exact pose drawn on top of it
+            pose = {"position": {"x": round(v["x"], 2), "z": round(v["z"], 2)}, "size": round(v["size"], 1), "height": round(heights[i], 2),
+                    "rotation": round(v["bearing"] % 360, 2), "tilt": round(v["tilt"], 2),
+                    "eye": {"x": round(v["x"] - forward[0] * d, 3), "y": round(heights[i] - forward[1] * d, 3), "z": round(v["z"] - forward[2] * d, 3)},
+                    "yaw": round(v["bearing"] % 360, 4), "pitch": round(v["tilt"], 4)}
+            drawn = post("/commands/set-camera-pose", pose)["frame"]
+            while get("/state/frame")["frame"] <= drawn + 1:   # two frames on, the view is on screen
                 pass
             grab(window).save(os.path.join(frames, f"{i:05d}.jpg"), quality=92)
             if i % 300 == 0:
                 print(f"frame {i} of {count}", flush=True)
     finally:
-        post("/commands/set-ui", {"visible": True})
+        post("/commands/set-ui", {"visible": True})   # also hands the camera back to the game
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(fps), "-i", os.path.join(frames, "%05d.jpg"),
                     "-vf", "scale=1920:-2", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", out], check=True)
     shutil.rmtree(frames)

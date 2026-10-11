@@ -67,12 +67,17 @@ class Mesh:
         for a, b in zip(corners, corners[1:] + corners[:1]):
             self.poly([(a[0], top, a[1]), (b[0], top, b[1]), (cx, apex, cz)], [(0, SPIRE[0]), (1.75, SPIRE[0]), (0.875, SPIRE[1])], (cx, top + 1, cz))
 
-    def block(self, x0, x1, z0, z1, height, bay=BAY):
-        """A flat-roofed block: four walls in the wall band and a roof in the plain band."""
+    def block(self, x0, x1, z0, z1, height, bay=BAY, sign_every=None):
+        """A flat-roofed block: four walls in the wall band and a roof in the plain band.
+
+        With sign_every, each wall shows the wall band a whole number of times, about once every
+        that many metres, so a shop sign is never cut off at a corner.
+        """
         inside = ((x0 + x1) / 2, height / 2, (z0 + z1) / 2)
         corners = [(x0, z0), (x1, z0), (x1, z1), (x0, z1)]
         for a, b in zip(corners, corners[1:] + corners[:1]):
-            self.wall(a, b, 0, height, WALL, bay * 4, inside)
+            per_u = math.dist(a, b) / max(1, round(math.dist(a, b) / sign_every)) if sign_every else bay * 4
+            self.wall(a, b, 0, height, WALL, per_u, inside)
         self.poly([(x0, height, z0), (x1, height, z0), (x1, height, z1), (x0, height, z1)],
                   [(0, ROOF[0]), ((x1 - x0) / 16, ROOF[0]), ((x1 - x0) / 16, ROOF[1]), (0, ROOF[1])], inside)
 
@@ -221,6 +226,33 @@ def block_texture(seed, wall=(196, 190, 178), glass=(52, 66, 84), floors=5, roof
     return img
 
 
+def shop_texture(name, wall, sign, text, glass=(60, 76, 92), roof=(96, 98, 102)):
+    """A shop front: the chain's name in its colours on a band over glazing and a door."""
+    from PIL import ImageFont
+    img = Image.new("RGB", (SIZE, SIZE))
+    d = ImageDraw.Draw(img)
+    top, bottom = rows(WALL)
+    height = bottom - top
+    d.rectangle([0, top, SIZE, bottom], fill=wall)
+    band = int(height * 0.42)
+    d.rectangle([0, top, SIZE, top + band], fill=sign)
+    size = int(band * 0.72)
+    font = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", size)
+    while d.textlength(name, font=font) > SIZE * 0.86 and size > 20:      # long names shrink to fit
+        size -= 6
+        font = ImageFont.truetype("C:/Windows/Fonts/arialbd.ttf", size)
+    d.text((SIZE / 2, top + band / 2), name, font=font, fill=text, anchor="mm")
+    for x in range(40, SIZE - 40, 164):                                     # shop windows
+        d.rectangle([x, top + band + 26, x + 132, bottom - 30], fill=glass, outline=(40, 44, 50), width=3)
+    d.rectangle([SIZE // 2 - 70, top + band + 14, SIZE // 2 + 70, bottom - 8], fill=(34, 40, 48), outline=(210, 210, 210), width=4)   # doors
+    d.line([(SIZE // 2, top + band + 14), (SIZE // 2, bottom - 8)], fill=(210, 210, 210), width=3)
+    d.rectangle([0, bottom - 8, SIZE, bottom], fill=(110, 110, 112))
+    for b in (TOWER, ROOF, SPIRE, PLAIN):
+        t, bb = rows(b)
+        d.rectangle([0, t, SIZE, bb], fill=roof)
+    return img
+
+
 def call(path, body=None):
     data = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request("http://127.0.0.1:32123" + path, data=data, headers={"Content-Type": "application/json"})
@@ -267,8 +299,11 @@ def run(registry, source):
             sys.exit("step must be generate, create or place")
 
 
-def save(out, mesh, image, source):
+def save(out, mesh, image, source, texture_size=SIZE):
+    """texture_size below 1024 makes a much smaller asset file; fine for plain buildings."""
     os.makedirs(out, exist_ok=True)
     mesh.write(os.path.join(out, "model.obj"), source)
+    if texture_size != SIZE:
+        image = image.resize((texture_size, texture_size), Image.LANCZOS)
     image.save(os.path.join(out, "diffuse.png"))
     image.resize((128, 128), Image.LANCZOS).save(os.path.join(out, "lod.png"))

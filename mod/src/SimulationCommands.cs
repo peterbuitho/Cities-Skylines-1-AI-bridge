@@ -1,3 +1,4 @@
+using System;
 using ColossalFramework;
 using UnityEngine;
 
@@ -31,7 +32,113 @@ namespace SkylinesAgentBridge
 
         // POST /commands/set-ui {"visible":false}: hides or shows the whole game interface, for
         // screenshots and video. Street names are drawn in the world and stay.
-        private static int linesVisibleBefore;
+        private static bool overlayWasShown;
+
+        // Reads, and with a value sets, the Image Overlay Renewal mod's "show image" setting.
+        // Returns what it was, or null when that mod is not there.
+        private static bool? ImageOverlayShown(bool? show)
+        {
+            try
+            {
+                foreach (System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (assembly.GetName().Name != "ImageOverlayRenewal")
+                    {
+                        continue;
+                    }
+                    const System.Reflection.BindingFlags any = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static |
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+                    Type domainType = assembly.GetType("CSLModsCommon.Manager.Domain");
+                    Type managerType = assembly.GetType("ImageOverlayRenewal.Managers.ImageOverlayManager");
+                    object domain = domainType.GetProperty("DefaultDomain", any).GetValue(null, null);
+                    object manager = domainType.GetMethod("GetManager", any).MakeGenericMethod(managerType).Invoke(domain, null);
+                    object setting = managerType.GetField("_modSetting", any).GetValue(manager);
+                    System.Reflection.PropertyInfo property = setting.GetType().GetProperty("ShowImage", any);
+                    bool before = (bool)property.GetValue(setting, null);
+                    if (show.HasValue)
+                    {
+                        property.SetValue(setting, show.Value, null);
+                    }
+                    return before;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log("[SkylinesAgentBridge] Image overlay switch failed: " + e.Message);
+            }
+            return null;
+        }
+
+        // POST /commands/set-camera-pose: the fields of set-camera plus
+        // {"eye":{"x":..,"y":..,"z":..},"yaw":..,"pitch":..}
+        // The game's camera logic keeps running with the set-camera view, so street names, culling
+        // and detail levels work as usual, but it smooths and clamps a little on its own, which
+        // makes a frame-by-frame recording bob. So the exact eye point and direction are put on the
+        // camera at the last moment before each frame is drawn. Ends when set-ui shows the interface.
+        private static bool poseActive;
+        private static System.Reflection.FieldInfo roadNameAlpha;
+        private static bool poseHooked;
+        private static Vector3 posePosition;
+        private static Quaternion poseRotation;
+
+        public static CommandResult SetCameraPose(string body)
+        {
+            CameraController controller = ToolsModifierControl.cameraController;
+            if (controller == null)
+            {
+                return CommandResult.Fail("Camera controller is not available.");
+            }
+            SetCamera(body);
+            posePosition = new Vector3(JsonUtil.GetPointNumber(body, "eye", "x", 0f), JsonUtil.GetPointNumber(body, "eye", "y", 100f),
+                JsonUtil.GetPointNumber(body, "eye", "z", 0f));
+            poseRotation = Quaternion.Euler(JsonUtil.GetNumber(body, "pitch", 30f), JsonUtil.GetNumber(body, "yaw", 0f), 0f);
+            poseActive = true;
+
+            // The free camera mode that hides the interface also fades the street names out.
+            // Hold them fully visible for as long as poses keep coming.
+            NetManager net = Singleton<NetManager>.instance;
+            net.RoadNamesVisible = true;
+            if (roadNameAlpha == null)
+            {
+                roadNameAlpha = typeof(NetManager).GetField("m_roadNameAlpha",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            }
+            if (roadNameAlpha != null)
+            {
+                roadNameAlpha.SetValue(net, 1f);
+            }
+            if (!poseHooked)
+            {
+                Camera.onPreCull += ApplyPose;
+                poseHooked = true;
+            }
+            return CommandResult.FromJson("{\"ok\":true,\"frame\":" + Time.frameCount + "}");
+        }
+
+        private static void ApplyPose(Camera camera)
+        {
+            CameraController controller = ToolsModifierControl.cameraController;
+            if (poseActive && controller != null && camera.transform == controller.transform)
+            {
+                camera.transform.position = posePosition;
+                camera.transform.rotation = poseRotation;
+            }
+        }
+
+        // GET /state/camera: where the camera is and which way it looks.
+        public static CommandResult CameraState()
+        {
+            CameraController controller = ToolsModifierControl.cameraController;
+            if (controller == null)
+            {
+                return CommandResult.Fail("Camera controller is not available.");
+            }
+            Vector3 p = controller.transform.position;
+            Vector3 r = controller.transform.rotation.eulerAngles;
+            return CommandResult.FromJson("{\"ok\":true,\"eye\":{\"x\":" + JsonUtil.Number(p.x) + ",\"y\":" + JsonUtil.Number(p.y) +
+                ",\"z\":" + JsonUtil.Number(p.z) + "},\"yaw\":" + JsonUtil.Number(r.y) + ",\"pitch\":" + JsonUtil.Number(r.x) +
+                ",\"frame\":" + Time.frameCount + "}");
+        }
 
         public static CommandResult SetUi(string body)
         {
@@ -44,7 +151,8 @@ namespace SkylinesAgentBridge
             }
             ColossalFramework.UI.UIView.Show(visible);
 
-            // Report, then switch off, the overlays that paint coloured bands over the city.
+            // Report the overlays that can paint coloured bands over the city. They were all off when the
+            // bands turned out to be the Image Overlay mod; setting them here hid the street names.
             DistrictManager districts = Singleton<DistrictManager>.instance;
             PathVisualizer paths = Singleton<NetManager>.instance.PathVisualizer;
             string overlays = "{\"infoMode\":\"" + Singleton<InfoManager>.instance.CurrentMode + "\"" +
@@ -55,35 +163,26 @@ namespace SkylinesAgentBridge
                 ",\"heatingMapVisible\":" + JsonUtil.Bool(Singleton<WaterManager>.instance.HeatingMapVisible) +
                 ",\"electricityMapVisible\":" + JsonUtil.Bool(Singleton<ElectricityManager>.instance.ElectricityMapVisible) +
                 ",\"linesVisible\":" + Singleton<TransportManager>.instance.LinesVisible + "}";
+            // A tracing image laid over the map by the Image Overlay mod goes away for the picture too.
             if (!visible)
             {
-                // The game switches these maps back on by itself when their info view is opened.
-                Singleton<WaterManager>.instance.WaterMapVisible = false;
-                Singleton<WaterManager>.instance.HeatingMapVisible = false;
-                Singleton<ElectricityManager>.instance.ElectricityMapVisible = false;
-                districts.DistrictsVisible = false;
-                districts.ParksVisible = false;
-                if (paths != null)
+                bool? shown = ImageOverlayShown(null);
+                if (shown.HasValue && shown.Value)
                 {
-                    paths.PathsVisible = false;
+                    overlayWasShown = true;
+                    ImageOverlayShown(false);
                 }
+            }
+            else
+            {
+                if (overlayWasShown)
+                {
+                    ImageOverlayShown(true);
+                    overlayWasShown = false;
+                }
+                poseActive = false;   // hand the camera back to the game
             }
 
-            // Transport lines are drawn as wide coloured bands over everything; take them away too.
-            TransportManager transport = Singleton<TransportManager>.instance;
-            if (!visible)
-            {
-                if (transport.LinesVisible != 0)
-                {
-                    linesVisibleBefore = transport.LinesVisible;
-                }
-                transport.LinesVisible = 0;
-            }
-            else if (linesVisibleBefore != 0)
-            {
-                transport.LinesVisible = linesVisibleBefore;
-                linesVisibleBefore = 0;
-            }
             return CommandResult.FromJson("{\"ok\":true,\"visible\":" + JsonUtil.Bool(visible) + ",\"overlaysBefore\":" + overlays + "}");
         }
 

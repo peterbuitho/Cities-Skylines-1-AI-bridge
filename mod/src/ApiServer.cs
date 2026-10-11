@@ -132,6 +132,17 @@ namespace SkylinesAgentBridge
                 return RunOnSimulationThread(request, delegate { return Diagnostics.BuildRouteJson(fx != int.MinValue, fx, fz, tx, tz, drive, max, label); });
             }
 
+            if (request.Method == "GET" && request.Path == "/state/camera")
+            {
+                return RunOnGameThread(request, SimulationCommands.CameraState);
+            }
+
+            if (request.Method == "POST" && request.Path == "/commands/set-camera-pose")
+            {
+                string body = request.Body;
+                return RunOnGameThread(request, delegate { return SimulationCommands.SetCameraPose(body); });
+            }
+
             if (request.Method == "GET" && request.Path == "/state/frame")
             {
                 return RunOnGameThread(request, SimulationCommands.Frame);
