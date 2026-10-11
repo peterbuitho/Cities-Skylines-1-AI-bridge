@@ -59,6 +59,18 @@ To put a neighbourhood's small streets back into a thinned city (then run `zones
 py -X utf8 tools\add_streets.py out\aarhus.plan.json "-3967,-85" 1100 --live   # Åbyhøj
 ```
 
+## Landmarks as generated models
+
+A landmark the Steam Workshop does not have (see `cities/aarhus.workshop.md`) can be generated: a script writes a mesh and a facade texture from the building's real measures, and the mod packs them into a game asset.
+
+```powershell
+py -X utf8 tools\landmarks\domkirken.py out\assets\aarhus_domkirke
+# with a city loaded: POST /commands/create-asset
+#   {"name":"Aarhus Domkirke","folder":"<repo>/out/assets/aarhus_domkirke","template":"Statue of Shopping","cellWidth":12,"cellLength":6}
+# restart the game, then place "Aarhus Domkirke.Aarhus Domkirke_Data" with /commands/place-building
+tools\screenshot.ps1 -X -1187 -Z 90 -Size 150 -Out shot.png   # look at it
+```
+
 ## Light rail as metro
 
 The game has no trams without the Snowfall expansion, so `tools/metro.py` builds a real light-rail route as a ground-level metro: a station at each named stop, track along the OpenStreetMap alignment, and one line out and back.
