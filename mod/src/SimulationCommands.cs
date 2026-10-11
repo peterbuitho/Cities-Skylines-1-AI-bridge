@@ -47,6 +47,19 @@ namespace SkylinesAgentBridge
             camera.m_targetSize = size;
             camera.m_currentSize = size;
 
+            // Optional view direction: "rotation" turns the camera round the spot (0 looks north),
+            // "tilt" is the angle down from the horizon (90 is straight down, 20 is nearly level).
+            float rotation = JsonUtil.GetNumber(body, "rotation", float.NaN);
+            float tilt = JsonUtil.GetNumber(body, "tilt", float.NaN);
+            if (!float.IsNaN(rotation) || !float.IsNaN(tilt))
+            {
+                Vector2 angle = camera.m_targetAngle;
+                if (!float.IsNaN(rotation)) angle.x = rotation;
+                if (!float.IsNaN(tilt)) angle.y = Mathf.Clamp(tilt, 0f, 90f);
+                camera.m_targetAngle = angle;
+                camera.m_currentAngle = angle;
+            }
+
             return CommandResult.FromJson("{\"ok\":true,\"x\":" + JsonUtil.Number(x) +
                 ",\"z\":" + JsonUtil.Number(z) +
                 ",\"size\":" + JsonUtil.Number(size) + "}");

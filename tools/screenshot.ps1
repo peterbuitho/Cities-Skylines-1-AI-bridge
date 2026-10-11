@@ -1,15 +1,21 @@
 # Points the game camera at a spot and saves a screenshot of the game window.
-# Use: screenshot.ps1 -X -1187 -Z 90 -Size 260 -Out shot.png
+# Use: screenshot.ps1 -X -1187 -Z 90 -Size 260 -Out shot.png [-Rotation 0 -Tilt 30]
+# Rotation turns the camera round the spot, Tilt is the angle down from the horizon (90 = straight down).
 param(
     [Parameter(Mandatory)] [double]$X,
     [Parameter(Mandatory)] [double]$Z,
     [double]$Size = 300,
+    [Nullable[double]]$Rotation,
+    [Nullable[double]]$Tilt,
     [Parameter(Mandatory)] [string]$Out,
     [string]$Bridge = "http://127.0.0.1:32123"
 )
 
 $ErrorActionPreference = "Stop"
-$body = @{ position = @{ x = $X; z = $Z }; size = $Size } | ConvertTo-Json -Compress
+$view = @{ position = @{ x = $X; z = $Z }; size = $Size }
+if ($null -ne $Rotation) { $view.rotation = $Rotation }
+if ($null -ne $Tilt) { $view.tilt = $Tilt }
+$body = $view | ConvertTo-Json -Compress
 Invoke-WebRequest "$Bridge/commands/set-camera" -Method Post -Body $body -ContentType "application/json" -UseBasicParsing | Out-Null
 
 Add-Type -AssemblyName System.Drawing
